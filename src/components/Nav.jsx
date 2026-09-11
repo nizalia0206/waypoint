@@ -129,7 +129,6 @@ export default function Nav({ toast }) {
           {!user && (
             <div className="mobile-nav-auth">
               <Link to="/signin" onClick={close}>{t.auth.signIn}</Link>
-              <Link to="/signup" className="nav-signup-btn" onClick={close}>{t.auth.signUp}</Link>
             </div>
           )}
         </div>
