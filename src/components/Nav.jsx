@@ -5,12 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { getRequests, markRepliesSeen } from '../data/requestsStore';
 import AccessibilityPanel from './AccessibilityPanel';
 import UserMenu from './UserMenu';
+import NotificationsDialog from './NotificationsDialog';
 
 export default function Nav({ toast }) {
   const [open, setOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(true);
   const [notifCount, setNotifCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
   const featuresRef = useRef(null);
   const close = () => setOpen(false);
   const location = useLocation();
@@ -62,13 +64,11 @@ export default function Nav({ toast }) {
   const goToNotifications = () => {
     close();
     if (!user) return;
-    if (user.role === 'mentor') {
-      navigate('/mentor');
-    } else {
+    if (user.role === 'student') {
       markRepliesSeen(user.name);
       setNotifCount(0);
-      navigate('/features', { state: { scrollTo: 'match' } });
     }
+    setNotifOpen(true);
   };
 
   // Never touch window.location.hash here — this app uses HashRouter, which
@@ -155,6 +155,7 @@ export default function Nav({ toast }) {
           <button className="mobile-toggle" aria-label="Toggle menu" onClick={() => setOpen(o => !o)}>☰</button>
         </div>
       </div>
+      {notifOpen && <NotificationsDialog onClose={() => setNotifOpen(false)} />}
     </nav>
   );
 }

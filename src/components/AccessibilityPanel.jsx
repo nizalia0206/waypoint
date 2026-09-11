@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSite } from '../context/SiteContext';
 import RecordDemo from './RecordDemo';
 
 export default function AccessibilityPanel() {
   const [open, setOpen] = useState(false);
-  const { lang, setLang, t, aslEnabled, setAslEnabled, startTour } = useSite();
+  const { lang, setLang, t, aslEnabled, setAslEnabled, startTour, tourActive, tourStep } = useSite();
+
+  // When the guided tour reaches the accessibility step, open the panel
+  // itself so the actual language/ASL/replay/record controls are visible
+  // and explained, not just a highlighted closed button.
+  useEffect(() => {
+    if (!tourActive) return;
+    const step = t.tour.steps[tourStep];
+    setOpen(!!(step && step.targetId === 'access-wrap'));
+  }, [tourActive, tourStep, t]);
 
   const handleReplayTour = () => {
     setOpen(false);
@@ -12,7 +21,7 @@ export default function AccessibilityPanel() {
   };
 
   return (
-    <div className="access-wrap">
+    <div className="access-wrap" id="access-wrap">
       <button
         className="access-btn"
         onClick={() => setOpen(o => !o)}
@@ -24,6 +33,7 @@ export default function AccessibilityPanel() {
           <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.6" />
           <path d="M12 8v5M12 15.5v.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
+        <span className="access-btn-label">{t.access.title}</span>
       </button>
 
       {open && (

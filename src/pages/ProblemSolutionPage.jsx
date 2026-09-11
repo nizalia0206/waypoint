@@ -1,5 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../context/SiteContext';
+import { getFeedback } from '../data/requestsStore';
+
+const OUTCOME_KEYS = ['understood', 'cv', 'internship', 'interview', 'courseAdvice', 'decision', 'another'];
 
 function ThinkingIllustration() {
   return (
@@ -53,6 +57,19 @@ export default function ProblemSolutionPage() {
   const { t } = useSite();
   const ps = t.ps;
 
+  const impact = useMemo(() => {
+    const feedback = getFeedback();
+    const total = feedback.length;
+    if (total === 0) return null;
+    const counts = OUTCOME_KEYS.map((key) => ({
+      key,
+      count: feedback.filter((f) => f.outcomes && f.outcomes[key]).length,
+    })).sort((a, b) => b.count - a.count);
+    const top = counts[0];
+    if (!top || top.count === 0) return null;
+    return { total, top, pct: Math.round((top.count / total) * 100) };
+  }, []);
+
   return (
     <section id="problem-solution" style={{ paddingTop: 48 }}>
       <div className="wrap">
@@ -104,6 +121,17 @@ export default function ProblemSolutionPage() {
             <p style={{ fontSize: '16.5px', lineHeight: 1.7, maxWidth: '68ch' }}>{ps.solutionText}</p>
           </div>
           <div className="ps-illustration"><SolutionIllustration /></div>
+        </div>
+
+        <div className="ps-block ps-impact">
+          <span className="eyebrow">{ps.impactTag}</span>
+          {impact ? (
+            <p className="ps-impact-stat">
+              <strong>{impact.pct}%</strong> {ps.impactPrefix} <em>&ldquo;{t.match.feedbackOutcomes[impact.top.key]}&rdquo;</em> {ps.impactSuffix(impact.total)}
+            </p>
+          ) : (
+            <p className="ps-impact-empty">{ps.impactEmpty}</p>
+          )}
         </div>
 
         <div className="ps-block">

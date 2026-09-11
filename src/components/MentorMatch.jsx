@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ALUMNI } from '../data/alumni';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
-import { addRequest } from '../data/requestsStore';
+import { addRequest, addFeedback } from '../data/requestsStore';
 import MagneticButton from './MagneticButton';
 import Mascot from './Mascot';
 
@@ -11,6 +11,46 @@ const YEAR_VALUES = ['Freshman', 'Sophomore', 'Junior', 'Senior'];
 const EXP_VALUES = ['First-gen student', 'ADHD', 'Hearing/visual', 'International student'];
 const COMM_VALUES = ['Text-first', 'Video call', 'Extra response time', 'Captions', 'Sign language interpreter'];
 const ASK_VALUES = ['15-minute chat', 'mock interview', 'resume review'];
+const FEEDBACK_OUTCOME_KEYS = ['understood', 'cv', 'internship', 'interview', 'courseAdvice', 'decision', 'another'];
+
+const STOPWORDS = new Set(['a', 'an', 'the', 'at', 'in', 'on', 'of', 'for', 'to', 'and', 'my', 'me', 'become', 'be', 'as', 'is']);
+function keywords(text) {
+  return (text || '').toLowerCase().match(/[a-z]+/g)?.filter((w) => w.length > 2 && !STOPWORDS.has(w)) || [];
+}
+function responseSpeedScore(responseTime) {
+  if (!responseTime) return 0;
+  if (/a day/.test(responseTime)) return 6;
+  if (/2 days/.test(responseTime)) return 3;
+  return 1;
+}
+
+// A real weighted match, not just "first alum with the same major" — this is
+// what actually runs during a live demo, since the direct API call is
+// usually blocked by CORS outside the claude.ai sandbox.
+function scoreAlum(alum, { major, goal, expTags }) {
+  let score = 0;
+  if (alum.major === major) score += 50;
+
+  const goalWords = new Set(keywords(goal));
+  const alumWords = new Set(keywords([alum.industry, alum.currentRole, alum.path[alum.path.length - 1]].join(' ')));
+  let overlap = 0;
+  goalWords.forEach((w) => { if (alumWords.has(w)) overlap += 1; });
+  score += overlap * 18;
+
+  if (expTags && expTags.length && alum.experienceTags) {
+    const shared = expTags.filter((t) => alum.experienceTags.includes(t));
+    score += shared.length * 25;
+  }
+
+  score += (alum.studentsHelped || 0) * 1;
+  score += responseSpeedScore(alum.responseTime);
+  return score;
+}
+function bestLocalMatch(major, goal, expTags) {
+  return ALUMNI.slice()
+    .map((alum) => ({ alum, score: scoreAlum(alum, { major, goal, expTags }) }))
+    .sort((a, b) => b.score - a.score)[0].alum;
+}
 
 // The route shows an alum's actual dated history, but a checklist item like
 // "BSc Computer Science, 2019" reads oddly as something for a student to
@@ -72,6 +112,9 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
   const [pickedSlot, setPickedSlot] = useState(null);
   const [roomLink, setRoomLink] = useState(null);
   const [done, setDone] = useState(() => alum.path.map(() => false));
+  const [feedbackChecked, setFeedbackChecked] = useState({});
+  const [feedbackSaved, setFeedbackSaved] = useState(false);
+  const [thankYouSent, setThankYouSent] = useState(false);
 
   const slots = ['Tue 4:00 PM', 'Wed 11:00 AM', 'Thu 6:30 PM'];
   const doneCount = done.filter(Boolean).length;
@@ -146,6 +189,19 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
     });
   };
 
+  const toggleFeedback = (key) => {
+    setFeedbackChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+  const submitFeedback = () => {
+    addFeedback(feedbackChecked);
+    setFeedbackSaved(true);
+    toast(t.match.feedbackSaved);
+  };
+  const sendThankYou = () => {
+    setThankYouSent(true);
+    toast(t.match.thankYouSent(firstName));
+  };
+
   return (
     <div className="mentor-card">
       <div className="mentor-reveal">
@@ -153,6 +209,21 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
         <p className="mentor-reveal-name">{t.match.didStatement(firstName)}</p>
       </div>
       <div className="mentor-meta">{alum.name} · {alum.major}, Class of {alum.gradYear}</div>
+      <div className="mentor-trust-row">
+        <span className="mentor-verified-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" aria-hidden="true">
+            <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+          </svg>
+          {t.match.verifiedBadge}
+        </span>
+        {alum.studentsHelped >= 10 && (
+          <span className="mentor-verified-badge gold">{t.match.reliableMentor}</span>
+        )}
+        {alum.activeRecently && <span className="mentor-trust-item">● {t.match.activeRecently}</span>}
+        {alum.studentsHelped != null && <span className="mentor-trust-item">{t.match.studentsHelpedLabel(alum.studentsHelped)}</span>}
+        {alum.responseTime && <span className="mentor-trust-item">{alum.responseTime}</span>}
+      </div>
 
       <MentorRoute steps={alum.path} />
 
@@ -222,6 +293,35 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
         </div>
       )}
 
+      {roomLink && (
+        <div className="mentor-feedback">
+          <span className="eyebrow">{t.match.feedbackTitle}</span>
+          <p className="mentor-feedback-sub">{t.match.feedbackSub}</p>
+          {feedbackSaved ? (
+            <p className="mentor-feedback-saved">{t.match.feedbackSaved}</p>
+          ) : (
+            <>
+              <div className="mentor-feedback-list">
+                {FEEDBACK_OUTCOME_KEYS.map((key) => (
+                  <label key={key} className="mentor-feedback-item">
+                    <input
+                      type="checkbox"
+                      checked={!!feedbackChecked[key]}
+                      onChange={() => toggleFeedback(key)}
+                    />
+                    {t.match.feedbackOutcomes[key]}
+                  </label>
+                ))}
+              </div>
+              <button className="ask-btn primary" onClick={submitFeedback}>{t.match.submitFeedback}</button>
+            </>
+          )}
+          <button className="mentor-draft-link" onClick={sendThankYou} disabled={thankYouSent} style={{ marginTop: 14 }}>
+            {thankYouSent ? t.match.thankYouSent(firstName) : t.match.sendThankYou(firstName)}
+          </button>
+        </div>
+      )}
+
       {msgOpen && (
         <div className="panel">
           <span className="label">{t.match.suggestedMsg}</span>
@@ -275,6 +375,7 @@ export default function MentorMatch({ goal, setGoal, toast, points, setPoints, s
   const [askType, setAskType] = useState('15-minute chat');
   const [stage, setStage] = useState(null); // null | 'destination' | 'scanning' | 'found'
   const [result, setResult] = useState(null);
+  const matchPoolCount = ALUMNI.filter((a) => a.major === major).length || ALUMNI.length;
 
   const toggleExp = (v) => {
     setExpTags(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
@@ -291,8 +392,8 @@ export default function MentorMatch({ goal, setGoal, toast, points, setPoints, s
 
     const prompt = `You are finding the single best mentor match for a university student on an app called Waypoint.
 Student: ${year}, majoring in ${major}, goal: "${g}". Shared experience: ${expTags.join(', ') || 'none stated'}.
-Alumni pool (JSON): ${JSON.stringify(ALUMNI.map(a => ({ id: a.id, name: a.name, major: a.major, gradYear: a.gradYear, path: a.path, industry: a.industry })))}
-Pick the SINGLE best-fit alum. Write "reason" (max 24 words, direct to student, plain language) and "icebreaker" (max 35 words, warm and specific). ${languageInstruction}
+Alumni pool (JSON): ${JSON.stringify(ALUMNI.map(a => ({ id: a.id, name: a.name, major: a.major, gradYear: a.gradYear, path: a.path, industry: a.industry, currentRole: a.currentRole, experienceTags: a.experienceTags })))}
+Pick the SINGLE best-fit alum. If the student stated a shared experience, treat an alum who shares it as a strong signal — students explicitly want someone who understands that situation. Write "reason" (max 30 words) as an explicit, factor-based explanation — name the SPECIFIC concrete reasons this alum matches (same major, same university, shared experience if relevant, how they entered this field, their current role) so the student can see exactly why this person and not someone else. Write "icebreaker" (max 35 words, warm and specific). ${languageInstruction}
 Return ONLY valid JSON, no markdown fences: {"alumniId":1,"reason":"...","icebreaker":"..."}`;
 
     const apiPromise = (async () => {
@@ -315,12 +416,23 @@ Return ONLY valid JSON, no markdown fences: {"alumniId":1,"reason":"...","icebre
         if (!alum) throw new Error('no match');
         return { alum, match: parsed };
       } catch (err) {
-        console.warn('Waypoint matching: falling back to local match (API call unavailable in this environment).', err);
-        const alum = ALUMNI.find(a => a.major === major) || ALUMNI[0];
+        console.warn('Waypoint matching: falling back to local weighted match (API call unavailable in this environment).', err);
+        const alum = bestLocalMatch(major, g, expTags);
+        const sameMajor = alum.major === major;
+        const goalWords = new Set(keywords(g));
+        const alumWords = keywords([alum.industry, alum.currentRole].join(' '));
+        const sharedWord = alumWords.find((w) => goalWords.has(w));
+        const sharedExp = (alum.experienceTags || []).find((tg) => expTags.includes(tg));
+        const reasonBits = [];
+        if (sameMajor) reasonBits.push(`studied ${alum.major} like you`);
+        reasonBits.push('graduated from your university');
+        if (sharedWord) reasonBits.push(`their path led through ${sharedWord}`);
+        if (sharedExp) reasonBits.push(`also identifies as ${sharedExp.toLowerCase()}`);
+        reasonBits.push(`now working as ${alum.currentRole || 'a professional in the field'}`);
         return {
           alum,
           match: {
-            reason: `Studied ${alum.major} here and moved into ${alum.industry.split('/')[0]} — the closest journey to "${g}" in the pool.`,
+            reason: `Matched on ${reasonBits.length} factors: ${reasonBits.join(', ')} — the closest journey to "${g}" in the pool.`,
             icebreaker: `Hi ${alum.name.split(' ')[0]}, I'm a ${year.toLowerCase()} ${major} student aiming for ${g} — would love 15 minutes to hear how your path started.`,
           },
         };
@@ -390,6 +502,21 @@ Return ONLY valid JSON, no markdown fences: {"alumniId":1,"reason":"...","icebre
                   <span className="ask-waypoint-label">{t.match.ask[v]}</span>
                 </button>
               ))}
+            </div>
+
+            <div className="match-preview">
+              <div className="match-preview-item">
+                <span className="match-preview-label">{t.match.previewGoal}</span>
+                <span className="match-preview-value">{goal.trim() || t.match.previewGoalEmpty}</span>
+              </div>
+              <div className="match-preview-item">
+                <span className="match-preview-label">{t.match.previewUni}</span>
+                <span className="match-preview-value">{t.match.previewUniValue}</span>
+              </div>
+              <div className="match-preview-item">
+                <span className="match-preview-label">{t.match.previewMatch}</span>
+                <span className="match-preview-value">{t.match.previewMatchValue(matchPoolCount)}</span>
+              </div>
             </div>
 
             <MagneticButton className="match-submit" disabled={stage !== null} onClick={findMentor}>

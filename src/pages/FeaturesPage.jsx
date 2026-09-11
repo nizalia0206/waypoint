@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
 import { getRequests } from '../data/requestsStore';
+import { usePoints } from '../hooks/usePoints';
 import TraceJourney from '../components/TraceJourney';
 import MentorMatch from '../components/MentorMatch';
 import TrailNotes from '../components/TrailNotes';
@@ -13,7 +14,7 @@ export default function FeaturesPage({ toast }) {
   const { t } = useSite();
   const { user } = useAuth();
   const [goal, setGoal] = useState('Product management at a tech startup');
-  const [points, setPoints] = useState(1240);
+  const [points, setPoints] = usePoints();
   const [callsScheduled, setCallsScheduled] = useState(0);
   const [milestonesCompleted, setMilestonesCompleted] = useState(0);
   const [notesHelped, setNotesHelped] = useState(0);

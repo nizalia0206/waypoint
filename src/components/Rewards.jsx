@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
+import { addRedemption } from '../data/rewardsStore';
 
 export default function Rewards({ toast, points, setPoints, callsScheduled, milestonesCompleted, notesHelped }) {
   const { t } = useSite();
@@ -18,6 +19,7 @@ export default function Rewards({ toast, points, setPoints, callsScheduled, mile
     }
     setPoints(p => p - item.cost);
     setRedeemed(prev => ({ ...prev, [i]: true }));
+    addRedemption(item);
     toast(t.rewards.redeemedToast(item.title));
   };
 

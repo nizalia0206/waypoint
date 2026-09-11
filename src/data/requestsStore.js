@@ -40,3 +40,32 @@ export function markRepliesSeen(studentName) {
   save(next);
   return next;
 }
+
+const FEEDBACK_KEY = 'waypoint_feedback_v1';
+
+function loadFeedback() {
+  try {
+    return JSON.parse(localStorage.getItem(FEEDBACK_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFeedback(list) {
+  try { localStorage.setItem(FEEDBACK_KEY, JSON.stringify(list)); } catch (e) { /* ignore */ }
+}
+
+// Post-session outcome feedback — kept separate from the requests themselves
+// since it's about impact, not the booking. This is what would eventually
+// let Waypoint show real "students who used this were X% more likely to..."
+// numbers to the university.
+export function addFeedback(outcomes) {
+  const list = loadFeedback();
+  list.push({ outcomes, timestamp: Date.now() });
+  saveFeedback(list);
+  return list;
+}
+
+export function getFeedback() {
+  return loadFeedback();
+}
