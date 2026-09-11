@@ -41,6 +41,26 @@ export function markRepliesSeen(studentName) {
   return next;
 }
 
+// Persists a student's post-call "thank-you" onto the actual request record
+// (rather than a UI-only confirmation toast), so the mentor genuinely sees it
+// on their side — reinforcing the mentoring relationship for real.
+export function sendThankYou(id) {
+  const list = load();
+  const next = list.map((r) => (r.id === id ? { ...r, thankYouSentAt: Date.now(), thankYouSeenByMentor: false } : r));
+  save(next);
+  return next;
+}
+
+// Clears the mentor-side "new thank-you" notification once they've viewed it.
+// Not filtered by mentor name, matching the existing (unfiltered) pending-request
+// count convention used elsewhere for the single-demo-mentor setup.
+export function markThankYousSeen() {
+  const list = load();
+  const next = list.map((r) => (r.thankYouSentAt && !r.thankYouSeenByMentor ? { ...r, thankYouSeenByMentor: true } : r));
+  save(next);
+  return next;
+}
+
 const FEEDBACK_KEY = 'waypoint_feedback_v1';
 
 function loadFeedback() {

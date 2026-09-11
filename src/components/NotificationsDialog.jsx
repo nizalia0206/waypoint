@@ -26,6 +26,14 @@ export default function NotificationsDialog({ onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  const thankYous = useMemo(() => {
+    if (!isMentor || !user) return [];
+    return getRequests()
+      .filter((r) => r.thankYouSentAt)
+      .sort((a, b) => b.thankYouSentAt - a.thankYouSentAt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isMentor]);
+
   const handleViewAll = () => {
     if (isMentor) {
       navigate('/mentor');
@@ -81,6 +89,24 @@ export default function NotificationsDialog({ onClose }) {
             <p className="notif-empty-line">{isMentor ? t.notif.noMessagesMentor : t.notif.noMessagesStudent}</p>
           )}
         </div>
+
+        {isMentor && (
+          <div className="notif-section">
+            <span className="notif-section-title">{t.notif.thankYouTitle}</span>
+            {thankYous.length > 0 ? (
+              <div className="notif-message-list">
+                {thankYous.map((r) => (
+                  <div className="notif-message-item" key={'ty-' + r.id}>
+                    <strong>{r.studentName}</strong>
+                    <span className="notif-message-sub">{t.notif.thankYouSub}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="notif-empty-line">{t.notif.noThankYous}</p>
+            )}
+          </div>
+        )}
 
         <button className="notif-view-all" onClick={handleViewAll}>{t.notif.viewAll}</button>
       </div>

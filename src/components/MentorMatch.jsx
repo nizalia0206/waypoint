@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ALUMNI } from '../data/alumni';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
-import { addRequest, addFeedback } from '../data/requestsStore';
+import { addRequest, addFeedback, sendThankYou as persistThankYou } from '../data/requestsStore';
 import MagneticButton from './MagneticButton';
 import Mascot from './Mascot';
 
@@ -115,6 +115,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
   const [feedbackChecked, setFeedbackChecked] = useState({});
   const [feedbackSaved, setFeedbackSaved] = useState(false);
   const [thankYouSent, setThankYouSent] = useState(false);
+  const [requestId, setRequestId] = useState(null);
 
   const slots = ['Tue 4:00 PM', 'Wed 11:00 AM', 'Thu 6:30 PM'];
   const doneCount = done.filter(Boolean).length;
@@ -161,7 +162,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
     // uses the logged-in student's real name when one exists, per the "never
     // show someone else's name as though they are the logged-in user" rule.
     const studentName = (user && user.role === 'student') ? user.name : 'A student (guest)';
-    addRequest({
+    const created = addRequest({
       studentName,
       isRealUser: !!(user && user.role === 'student'),
       goal: goal || '',
@@ -173,6 +174,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
       roomLink: link,
       createdAt: Date.now(),
     });
+    setRequestId(created.id);
     onRequestSent?.();
   };
 
@@ -198,6 +200,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
     toast(t.match.feedbackSaved);
   };
   const sendThankYou = () => {
+    if (requestId) persistThankYou(requestId);
     setThankYouSent(true);
     toast(t.match.thankYouSent(firstName));
   };

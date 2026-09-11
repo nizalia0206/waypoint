@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
-import { getRequests, markRepliesSeen } from '../data/requestsStore';
+import { getRequests, markRepliesSeen, markThankYousSeen } from '../data/requestsStore';
 import AccessibilityPanel from './AccessibilityPanel';
 import UserMenu from './UserMenu';
 import NotificationsDialog from './NotificationsDialog';
@@ -49,7 +49,9 @@ export default function Nav({ toast }) {
       if (!user) { setNotifCount(0); return; }
       const requests = getRequests();
       if (user.role === 'mentor') {
-        setNotifCount(requests.filter((r) => r.status === 'pending').length);
+        const pendingCount = requests.filter((r) => r.status === 'pending').length;
+        const thankYouCount = requests.filter((r) => r.thankYouSentAt && !r.thankYouSeenByMentor).length;
+        setNotifCount(pendingCount + thankYouCount);
       } else if (user.role === 'student') {
         setNotifCount(requests.filter((r) => r.studentName === user.name && r.reply && !r.replySeenByStudent).length);
       } else {
@@ -67,6 +69,11 @@ export default function Nav({ toast }) {
     if (user.role === 'student') {
       markRepliesSeen(user.name);
       setNotifCount(0);
+    } else if (user.role === 'mentor') {
+      markThankYousSeen();
+      // Pending requests still need a mentor decision (accept/decline), so
+      // only the thank-you portion of the badge clears on open — the count
+      // itself gets recomputed by the store-change listener regardless.
     }
     setNotifOpen(true);
   };

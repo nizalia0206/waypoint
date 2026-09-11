@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
 import { getRequests, updateRequest } from '../data/requestsStore';
@@ -19,6 +19,18 @@ export default function MentorPage({ toast }) {
   const mentorName = (user && user.role === 'mentor') ? user.name : 'Zobia Khan';
   const mentorOutcome = (user && user.role === 'mentor') ? user.outcome : null;
   const pendingReal = realRequests.filter((r) => r.status === 'pending');
+  const thankYous = realRequests
+    .filter((r) => r.thankYouSentAt)
+    .sort((a, b) => b.thankYouSentAt - a.thankYouSentAt);
+
+  // Keep this page's view of real requests live — a thank-you (or a new
+  // request) can land while the mentor is already sitting on this page,
+  // not just on next navigation.
+  useEffect(() => {
+    const onUpdate = () => setRealRequests(getRequests());
+    window.addEventListener('waypoint-requests-updated', onUpdate);
+    return () => window.removeEventListener('waypoint-requests-updated', onUpdate);
+  }, []);
 
   const accept = (req) => {
     setPending((prev) => prev.filter((r) => r.name !== req.name));
@@ -181,6 +193,21 @@ export default function MentorPage({ toast }) {
             </div>
           ))}
         </div>
+
+        {thankYous.length > 0 && (
+          <div className="mentor-thankyous">
+            <h4>{t.mentor.thankYouTitle}</h4>
+            {thankYous.map((r) => (
+              <div className="mentor-thankyou-item" key={r.id}>
+                <span className="mentor-thankyou-icon" aria-hidden="true">♥</span>
+                <div className="mentor-thankyou-body">
+                  <strong>{r.studentName}</strong>
+                  <span className="mentor-thankyou-sub">{t.mentor.thankYouLine}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="mentor-redeem-preview">
           <h4>{t.mentor.redeemTitle}</h4>

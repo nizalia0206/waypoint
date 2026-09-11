@@ -24,6 +24,9 @@ export const translations = {
       noMessagesMentor: 'No pending requests right now.',
       viewAll: 'View all',
       close: 'Close',
+      thankYouTitle: 'Thank-yous',
+      thankYouSub: 'Sent you a thank-you after your call.',
+      noThankYous: 'No thank-yous yet.',
     },
     home: {
       aboutTitle: 'What is Waypoint?',
@@ -254,6 +257,8 @@ export const translations = {
       goalPrefix: 'Goal:',
       upcomingTitle: 'Upcoming Calls',
       upcomingEmpty: 'Your next conversation will appear here.',
+      thankYouTitle: 'Thank-you notes',
+      thankYouLine: 'sent you a thank-you after your call.',
       redeemTitle: 'Redeem Catalog',
       redeemSub: "Mentors are often alumni already past needing campus services — these perks skip the ones that assume you're still enrolled.",
       redeem: [
@@ -422,6 +427,9 @@ export const translations = {
       noMessagesMentor: 'لا توجد طلبات معلّقة حاليًا.',
       viewAll: 'عرض الكل',
       close: 'إغلاق',
+      thankYouTitle: 'رسائل الشكر',
+      thankYouSub: 'أرسل لك شكرًا بعد مكالمتك.',
+      noThankYous: 'لا توجد رسائل شكر بعد.',
     },
     home: {
       aboutTitle: 'ما هو وايبوينت؟',
@@ -652,6 +660,8 @@ export const translations = {
       goalPrefix: 'الهدف:',
       upcomingTitle: 'المكالمات القادمة',
       upcomingEmpty: 'الطلبات المقبولة ستظهر هنا، مجدولة وجاهزة.',
+      thankYouTitle: 'ملاحظات شكر',
+      thankYouLine: 'أرسل لك شكرًا بعد مكالمتك.',
       redeemTitle: 'كتالوج الاستبدال',
       redeemSub: 'غالبًا ما يكون الموجّهون خريجين لم يعودوا بحاجة إلى خدمات الحرم الجامعي — هذه المكافآت تتجاوز ما يفترض أنك لا تزال طالبًا مسجّلاً.',
       redeem: [
