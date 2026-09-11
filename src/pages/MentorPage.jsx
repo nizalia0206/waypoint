@@ -35,11 +35,9 @@ export default function MentorPage({ toast }) {
   };
 
   const acceptReal = (req) => {
-    const slot = SLOTS[accepted.length % SLOTS.length];
-    const roomLink = 'meet.waypoint.app/waypoint-' + Math.random().toString(36).slice(2, 8);
-    updateRequest(req.id, { status: 'accepted', slot, roomLink });
+    updateRequest(req.id, { status: 'accepted' });
     setRealRequests(getRequests());
-    setAccepted((prev) => [...prev, { name: req.studentName, ask: req.askType, slot, roomLink }]);
+    setAccepted((prev) => [...prev, { name: req.studentName, ask: req.askType, slot: req.slot, roomLink: req.roomLink }]);
     setPoints((p) => p + 40);
     toast(t.mentor.acceptedToast(req.studentName));
   };

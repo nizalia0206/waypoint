@@ -13,17 +13,6 @@ export const translations = {
       cta: 'Find my trail',
       notifications: (n) => n > 0 ? `Notifications — ${n} new` : 'Notifications',
       accessibility: 'Accessibility',
-      notifPanel: {
-        title: 'Notifications',
-        empty: 'Nothing new — you\'ll see updates here as soon as you log in and a mentor responds.',
-        scheduled: (name, slot) => `${name} scheduled your call — ${slot}.`,
-        declined: (name) => `${name} can't take this one right now.`,
-        replied: (name) => `${name} replied to your message.`,
-        pendingSummary: (n) => `${n} pending request${n === 1 ? '' : 's'} waiting for your reply.`,
-        mentorEmpty: 'No pending requests right now.',
-        viewAll: 'View all in Your Messages',
-        goToRequests: 'Go to your requests',
-      },
     },
     home: {
       aboutTitle: 'What is Waypoint?',
@@ -97,8 +86,6 @@ export const translations = {
       yourMessagesTitle: 'Your Messages',
       awaitingReply: (name) => `Waiting on a reply from ${name}.`,
       replyFrom: (name) => `${name} replied:`,
-      scheduledMsg: (name, slot) => `${name} scheduled your call — ${slot}.`,
-      declinedMsg: (name) => `${name} can't take this one right now.`,
       nextWaypoints: 'NEXT WAYPOINTS',
       askDescriptions: {
         '15-minute chat': 'A quick conversation about how their path started.',
@@ -324,7 +311,7 @@ export const translations = {
         { targetId: 'match', page: '/features', title: 'Find a mentor', text: 'This one scans the alumni pool live — set a goal and it finds the closest-matching alum from the pool.' },
         { targetId: 'notes', page: '/features', title: 'Trail Notes', text: 'Searchable tips mentors left behind — filterable by shared experience.' },
         { targetId: 'rewards', page: '/features', title: 'Trail Points', text: 'Real point-spending here — redeem rewards, and the Verified Mentor badge posts straight to LinkedIn.' },
-        { targetId: null, page: null, title: "That's the tour", text: "There's also a Problem & Solution page in the nav, and an accessibility panel (top right) with language switching and sign-language support. Once you're logged in, the bell icon up top will notify you when a mentor replies to or schedules your request. Replay this tour from there anytime." },
+        { targetId: null, page: null, title: "That's the tour", text: "There's also a Problem & Solution page in the nav, and an accessibility panel (top right) with language switching and sign-language support. Replay this tour from there anytime." },
       ],
     },
     access: {
@@ -344,15 +331,6 @@ export const translations = {
       unsupported: "This browser doesn't support in-browser screen recording — try Chrome or Edge.",
       helpText: "Your browser will ask you to share a tab or screen, then the tour auto-plays while it records. A video file downloads automatically when it finishes.",
     },
-    notif: {
-      title: 'Notifications',
-      empty: "You're all caught up — nothing new.",
-      scheduled: (name, slot) => `${name} accepted your request${slot ? ` — ${slot}` : ''}.`,
-      replied: (name) => `${name} replied to your message.`,
-      declined: (name) => `${name} isn't able to take this request.`,
-      newRequest: (name, ask) => `New request from ${name} (${ask}).`,
-      viewAll: 'View all',
-    },
   },
 
   ar: {
@@ -369,17 +347,6 @@ export const translations = {
       cta: 'ابحث عن مساري',
       notifications: (n) => n > 0 ? `الإشعارات — ${n} جديد` : 'الإشعارات',
       accessibility: 'إمكانية الوصول',
-      notifPanel: {
-        title: 'الإشعارات',
-        empty: 'لا يوجد جديد — ستظهر هنا التحديثات بمجرد تسجيل الدخول ورد أحد الموجّهين.',
-        scheduled: (name, slot) => `${name} حدّد موعد مكالمتك — ${slot}.`,
-        declined: (name) => `${name} لا يستطيع تلبية هذا الطلب حاليًا.`,
-        replied: (name) => `${name} ردّ على رسالتك.`,
-        pendingSummary: (n) => `${n} طلب${n === 1 ? '' : 'ات'} بانتظار ردك.`,
-        mentorEmpty: 'لا توجد طلبات معلّقة حاليًا.',
-        viewAll: 'عرض الكل في رسائلك',
-        goToRequests: 'الذهاب إلى طلباتك',
-      },
     },
     home: {
       aboutTitle: 'ما هو وايبوينت؟',
@@ -453,8 +420,6 @@ export const translations = {
       yourMessagesTitle: 'رسائلك',
       awaitingReply: (name) => `في انتظار رد من ${name}.`,
       replyFrom: (name) => `رد ${name}:`,
-      scheduledMsg: (name, slot) => `${name} حدّد موعد مكالمتك — ${slot}.`,
-      declinedMsg: (name) => `${name} لا يستطيع تلبية هذا الطلب حاليًا.`,
       nextWaypoints: 'المحطات التالية',
       askDescriptions: {
         '15-minute chat': 'محادثة سريعة عن كيف بدأ طريقهم.',
@@ -680,7 +645,7 @@ export const translations = {
         { targetId: 'match', page: '/features', title: 'ابحث عن موجّه', text: 'هذا الجزء يفحص مجموعة الخريجين مباشرة — حدد هدفًا وسيجد أقرب خريج مطابق من المجموعة.' },
         { targetId: 'notes', page: '/features', title: 'ملاحظات الدرب', text: 'نصائح قابلة للبحث تركها الموجّهون — يمكن تصفيتها حسب التجربة المشتركة.' },
         { targetId: 'rewards', page: '/features', title: 'نقاط الدرب', text: 'استبدال نقاط حقيقي هنا — استبدل المكافآت، وشارة الموجّه الموثّق تُنشر مباشرة على لينكدإن.' },
-        { targetId: null, page: null, title: 'هذه كانت الجولة', text: 'هناك أيضًا صفحة "المشكلة والحل" في القائمة، ولوحة إمكانية وصول (أعلى يمين) فيها تبديل اللغة ودعم لغة الإشارة. بعد تسجيل الدخول، سيُعلمك رمز الجرس أعلى الصفحة عندما يردّ موجّه على طلبك أو يحدّد موعدًا له. يمكنك إعادة هذه الجولة من هناك في أي وقت.' },
+        { targetId: null, page: null, title: 'هذه كانت الجولة', text: 'هناك أيضًا صفحة "المشكلة والحل" في القائمة، ولوحة إمكانية وصول (أعلى يمين) فيها تبديل اللغة ودعم لغة الإشارة. يمكنك إعادة هذه الجولة من هناك في أي وقت.' },
       ],
     },
     access: {

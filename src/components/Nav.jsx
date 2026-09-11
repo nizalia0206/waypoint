@@ -11,10 +11,7 @@ export default function Nav({ toast }) {
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(true);
   const [notifCount, setNotifCount] = useState(0);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [notifItems, setNotifItems] = useState([]);
   const featuresRef = useRef(null);
-  const notifRef = useRef(null);
   const close = () => setOpen(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,9 +23,6 @@ export default function Nav({ toast }) {
     const onDocClick = (e) => {
       if (featuresRef.current && !featuresRef.current.contains(e.target)) {
         setFeaturesOpen(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', onDocClick);
@@ -47,9 +41,7 @@ export default function Nav({ toast }) {
 
   // Recompute on route change and whenever the store actually changes
   // anywhere in the app (accepting a request, sending a reply), so the bell
-  // stays accurate without needing a navigation to refresh it. For students
-  // this counts unseen replies AND unseen status changes (a mentor accepting
-  // — i.e. scheduling a call — or declining), not just replies.
+  // stays accurate without needing a navigation to refresh it.
   useEffect(() => {
     const recompute = () => {
       if (!user) { setNotifCount(0); return; }
@@ -57,8 +49,7 @@ export default function Nav({ toast }) {
       if (user.role === 'mentor') {
         setNotifCount(requests.filter((r) => r.status === 'pending').length);
       } else if (user.role === 'student') {
-        setNotifCount(requests.filter((r) => r.studentName === user.name
-          && ((r.reply && !r.replySeenByStudent) || (r.status !== 'pending' && !r.statusSeenByStudent))).length);
+        setNotifCount(requests.filter((r) => r.studentName === user.name && r.reply && !r.replySeenByStudent).length);
       } else {
         setNotifCount(0);
       }
@@ -68,46 +59,16 @@ export default function Nav({ toast }) {
     return () => window.removeEventListener('waypoint-requests-updated', recompute);
   }, [user, location.pathname]);
 
-  // Opens the small notifications dialog under the bell. For a student this
-  // snapshots their recent updates (replies, scheduled calls, declines) to
-  // show in the dialog, then marks them seen so the badge clears. For a
-  // mentor it's a quick summary of what's waiting in their inbox.
-  const toggleNotifPanel = () => {
+  const goToNotifications = () => {
+    close();
     if (!user) return;
-    setNotifOpen((prevOpen) => {
-      const next = !prevOpen;
-      if (next) {
-        const requests = getRequests();
-        if (user.role === 'student') {
-          const items = requests
-            .filter((r) => r.studentName === user.name && (r.reply || r.status !== 'pending'))
-            .sort((a, b) => (a.id < b.id ? 1 : -1))
-            .slice(0, 6);
-          setNotifItems(items);
-          markRepliesSeen(user.name);
-          setNotifCount(0);
-        } else if (user.role === 'mentor') {
-          setNotifItems(requests.filter((r) => r.status === 'pending'));
-        }
-      }
-      return next;
-    });
-  };
-
-  const goToYourMessages = () => {
-    setNotifOpen(false);
-    close();
-    if (location.pathname === '/features') {
-      document.getElementById('your-messages')?.scrollIntoView({ behavior: 'smooth' });
+    if (user.role === 'mentor') {
+      navigate('/mentor');
     } else {
-      navigate('/features', { state: { scrollTo: 'your-messages' } });
+      markRepliesSeen(user.name);
+      setNotifCount(0);
+      navigate('/features', { state: { scrollTo: 'match' } });
     }
-  };
-
-  const goToMentorRequests = () => {
-    setNotifOpen(false);
-    close();
-    navigate('/mentor');
   };
 
   // Never touch window.location.hash here — this app uses HashRouter, which
@@ -164,57 +125,24 @@ export default function Nav({ toast }) {
 
           <Link to="/mentor" className={isActive('/mentor') ? 'active' : ''} onClick={close}>{dot(isActive('/mentor'))}{t.nav.mentorView}</Link>
           <Link to="/problem-solution" className={isActive('/problem-solution') ? 'active' : ''} onClick={close}>{dot(isActive('/problem-solution'))}{t.nav.problemSolution}</Link>
+
+          {!user && (
+            <div className="mobile-nav-auth">
+              <Link to="/signin" onClick={close}>{t.auth.signIn}</Link>
+              <Link to="/signup" className="nav-signup-btn" onClick={close}>{t.auth.signUp}</Link>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <AccessibilityPanel />
           {user && (
-            <div className="notif-wrap" ref={notifRef}>
-              <button className="nav-bell" onClick={toggleNotifPanel} aria-expanded={notifOpen} aria-label={t.nav.notifications(notifCount)}>
-                <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
-                  <path d="M18 16v-5a6 6 0 0 0-12 0v5l-2 3h16l-2-3z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-                  <path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                </svg>
-                {notifCount > 0 && <span className="nav-bell-badge">{notifCount > 9 ? '9+' : notifCount}</span>}
-              </button>
-
-              {notifOpen && (
-                <div className="notif-panel" role="dialog" aria-label={t.nav.notifPanel.title}>
-                  <div className="notif-panel-title">{t.nav.notifPanel.title}</div>
-
-                  {user.role === 'mentor' ? (
-                    notifItems.length > 0 ? (
-                      <>
-                        <p className="notif-empty" style={{ fontStyle: 'normal' }}>{t.nav.notifPanel.pendingSummary(notifItems.length)}</p>
-                        <button className="notif-view-all" onClick={goToMentorRequests}>{t.nav.notifPanel.goToRequests}</button>
-                      </>
-                    ) : (
-                      <p className="notif-empty">{t.nav.notifPanel.mentorEmpty}</p>
-                    )
-                  ) : notifItems.length > 0 ? (
-                    <>
-                      {notifItems.map((r) => (
-                        <div className="notif-item" key={r.id} onClick={goToYourMessages}>
-                          <div className="notif-item-top">
-                            <span>{r.mentorName}</span>
-                            <span className="notif-item-meta">{t.match.ask[r.askType] || r.askType}</span>
-                          </div>
-                          <p className="notif-item-text">
-                            {r.status === 'accepted'
-                              ? t.nav.notifPanel.scheduled(r.mentorName.split(' ')[0], r.slot)
-                              : r.status === 'declined'
-                                ? t.nav.notifPanel.declined(r.mentorName.split(' ')[0])
-                                : t.nav.notifPanel.replied(r.mentorName.split(' ')[0])}
-                          </p>
-                        </div>
-                      ))}
-                      <button className="notif-view-all" onClick={goToYourMessages}>{t.nav.notifPanel.viewAll}</button>
-                    </>
-                  ) : (
-                    <p className="notif-empty">{t.nav.notifPanel.empty}</p>
-                  )}
-                </div>
-              )}
-            </div>
+            <button className="nav-bell" onClick={goToNotifications} aria-label={t.nav.notifications(notifCount)}>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
+                <path d="M18 16v-5a6 6 0 0 0-12 0v5l-2 3h16l-2-3z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+                <path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+              {notifCount > 0 && <span className="nav-bell-badge">{notifCount > 9 ? '9+' : notifCount}</span>}
+            </button>
           )}
           {user ? (
             <UserMenu toast={toast} />

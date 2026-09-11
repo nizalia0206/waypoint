@@ -61,7 +61,7 @@ export default function FeaturesPage({ toast }) {
         onRequestSent={() => setMsgRefresh((n) => n + 1)}
       />
       {myMessages.length > 0 && (
-        <section id="your-messages" style={{ paddingTop: 0 }}>
+        <section style={{ paddingTop: 0 }}>
           <div className="wrap" style={{ maxWidth: 620 }}>
             <span className="eyebrow">{t.match.yourMessagesTitle}</span>
             <div className="your-messages-list">
@@ -71,13 +71,6 @@ export default function FeaturesPage({ toast }) {
                   {r.message && <p className="your-message-text">&ldquo;{r.message}&rdquo;</p>}
                   {r.reply ? (
                     <p className="your-message-reply">{t.match.replyFrom(r.mentorName.split(' ')[0])} &ldquo;{r.reply}&rdquo;</p>
-                  ) : r.status === 'accepted' ? (
-                    <p className="your-message-scheduled">
-                      {t.match.scheduledMsg(r.mentorName.split(' ')[0], r.slot)}
-                      {r.roomLink && <span className="your-message-link"> {r.roomLink}</span>}
-                    </p>
-                  ) : r.status === 'declined' ? (
-                    <p className="your-message-declined">{t.match.declinedMsg(r.mentorName.split(' ')[0])}</p>
                   ) : (
                     <p className="your-message-waiting">{t.match.awaitingReply(r.mentorName.split(' ')[0])}</p>
                   )}

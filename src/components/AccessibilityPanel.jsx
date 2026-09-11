@@ -24,7 +24,6 @@ export default function AccessibilityPanel() {
           <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.6" />
           <path d="M12 8v5M12 15.5v.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
-        <span className="access-btn-label">{t.access.title}</span>
       </button>
 
       {open && (

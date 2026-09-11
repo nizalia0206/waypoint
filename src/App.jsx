@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import TraceGuide from './components/TraceGuide';
@@ -20,7 +20,6 @@ function AppShell() {
   const [fadeOut, setFadeOut] = useState(false);
   const { startTour } = useSite();
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fadeTimer = setTimeout(() => setFadeOut(true), 2300);
@@ -28,16 +27,8 @@ function AppShell() {
     return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
   }, []);
 
-  // Every fresh load/reload should land on the home page, no matter what
-  // page or hash the browser remembered. Runs once on mount only, so it
-  // never interferes with normal in-app navigation afterwards.
-  useEffect(() => {
-    navigate('/', { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Auto-launch the tour on every load/reload, once the loader has cleared
-  // and we're on the home page (where every tour target lives).
+  // Auto-launch the tour every time someone lands on the home page (first
+  // visit or a reload) — no manual trigger needed.
   useEffect(() => {
     if (showLoader) return;
     if (location.pathname !== '/') return;

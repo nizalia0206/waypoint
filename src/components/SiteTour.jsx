@@ -12,13 +12,7 @@ export default function SiteTour() {
   const highlightRef = useRef(null);
 
   useEffect(() => {
-    if (!tourActive) {
-      if (highlightRef.current) {
-        highlightRef.current.classList.remove('tour-highlight');
-        highlightRef.current = null;
-      }
-      return undefined;
-    }
+    if (!tourActive) return undefined;
 
     if (highlightRef.current) {
       highlightRef.current.classList.remove('tour-highlight');
@@ -60,14 +54,6 @@ export default function SiteTour() {
   };
   const handleBack = () => setTourStep(i => Math.max(0, i - 1));
 
-  const handleSkip = () => {
-    endTour();
-    if (location.pathname !== '/') {
-      navigate('/');
-    }
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  };
-
   return (
     <>
       <div className="tour-backdrop" aria-hidden="true" />
@@ -78,7 +64,7 @@ export default function SiteTour() {
             <div className="tour-card-title">{step.title}</div>
             <div className="tour-card-progress">{tourStep + 1} / {steps.length}</div>
           </div>
-          <button className="tour-skip" onClick={handleSkip}>{t.tour.skip}</button>
+          <button className="tour-skip" onClick={endTour}>{t.tour.skip}</button>
         </div>
         <p className="tour-card-text">{step.text}</p>
         <div className="tour-card-actions">

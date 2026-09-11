@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { translations } from '../i18n/translations';
 
 const SiteContext = createContext(null);
+const TOUR_SEEN_KEY = 'waypoint_tour_seen_v1';
 
 export function SiteProvider({ children }) {
   const [lang, setLang] = useState('en');
@@ -23,13 +24,18 @@ export function SiteProvider({ children }) {
 
   const endTour = useCallback(() => {
     setTourActive(false);
+    try { localStorage.setItem(TOUR_SEEN_KEY, '1'); } catch (e) { /* ignore */ }
+  }, []);
+
+  const hasSeenTour = useCallback(() => {
+    try { return localStorage.getItem(TOUR_SEEN_KEY) === '1'; } catch (e) { return true; }
   }, []);
 
   return (
     <SiteContext.Provider value={{
       lang, setLang, t,
       aslEnabled, setAslEnabled,
-      tourActive, tourStep, setTourStep, startTour, endTour,
+      tourActive, tourStep, setTourStep, startTour, endTour, hasSeenTour,
     }}>
       {children}
     </SiteContext.Provider>
