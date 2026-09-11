@@ -38,6 +38,18 @@ export default function SiteTour() {
   }, [tourActive, tourStep, location.pathname, navigate, step]);
 
   useEffect(() => {
+    if (tourActive) return undefined;
+    // Ending the tour (finish or skip) doesn't go through the "new step"
+    // branch above, so it never reaches the highlight-removal there — do it
+    // here instead, or the last-highlighted element (e.g. the hero) keeps
+    // tour-highlight's elevated z-index forever and can cover the nav.
+    if (highlightRef.current) {
+      highlightRef.current.classList.remove('tour-highlight');
+      highlightRef.current = null;
+    }
+  }, [tourActive]);
+
+  useEffect(() => {
     return () => {
       if (highlightRef.current) highlightRef.current.classList.remove('tour-highlight');
     };
