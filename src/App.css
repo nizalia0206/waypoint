@@ -664,6 +664,7 @@ html[dir="rtl"] .match-preview-value{text-align:left;}
 .mentor-feedback-item{display:flex; align-items:center; gap:10px; font-size:14.5px; color:var(--ink); cursor:pointer;}
 .mentor-feedback-item input{width:16px; height:16px; accent-color:var(--trail); cursor:pointer;}
 .mentor-feedback-saved{font-size:14px; color:var(--trail); font-weight:600; margin:0 0 4px;}
+.mentor-thankyou-cta{display:block; margin-top:20px; padding-top:18px; border-top:1px dashed var(--line);}
 
 .mentor-route{position:relative; margin:30px 0; padding-left:30px;}
 .mentor-route-line{position:absolute; left:5px; top:5px; bottom:5px; width:2px; background:var(--line); overflow:hidden;}
@@ -896,6 +897,7 @@ html[dir="rtl"] .user-menu-item{text-align:right;}
 .your-message-text{font-family:var(--serif); font-size:15px; font-style:italic; color:var(--ink-dim); margin:0 0 8px; line-height:1.5;}
 .your-message-reply{font-size:13.5px; color:var(--trail); margin:0; line-height:1.5;}
 .your-message-waiting{font-size:12.5px; color:var(--ink-dim); font-style:italic; margin:0;}
+.your-message-thanked{font-size:12.5px; color:var(--way); margin:4px 0 0;}
 .mentor-request-actions{display:flex; gap:10px; align-items:center; padding-top:2px; flex-shrink:0;}
 .mentor-request-accept, .mentor-request-decline{
   font-size:13px; font-weight:700; cursor:pointer; padding:9px 16px; border-radius:var(--radius-pill);

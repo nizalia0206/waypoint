@@ -36,7 +36,10 @@ export default function NotificationsDialog({ onClose }) {
 
   const handleViewAll = () => {
     if (isMentor) {
-      navigate('/mentor');
+      // Prefer scrolling straight to whichever is more likely why they
+      // opened this — a fresh thank-you, otherwise the requests list.
+      const scrollTo = thankYous.length > 0 ? 'thankyous' : 'requests';
+      navigate('/mentor', { state: { scrollTo } });
     } else {
       if (user) markRepliesSeen(user.name);
       navigate('/features', { state: { scrollTo: 'match' } });

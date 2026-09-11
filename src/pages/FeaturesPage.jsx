@@ -19,29 +19,49 @@ export default function FeaturesPage({ toast }) {
   const [milestonesCompleted, setMilestonesCompleted] = useState(0);
   const [notesHelped, setNotesHelped] = useState(0);
   const [msgRefresh, setMsgRefresh] = useState(0);
+  const [mySentRequestIds, setMySentRequestIds] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
 
   const myMessages = useMemo(() => {
-    if (!user || user.role !== 'student') return [];
-    return getRequests().filter((r) => r.studentName === user.name);
+    const requests = getRequests();
+    if (user && user.role === 'student') {
+      return requests.filter((r) => r.studentName === user.name);
+    }
+    // Guests aren't identifiable by name, so track exactly which requests
+    // *this browser tab* created this session instead of matching on the
+    // generic "A student (guest)" label (which every guest shares).
+    return requests.filter((r) => mySentRequestIds.includes(r.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [msgRefresh, user]);
+  }, [msgRefresh, user, mySentRequestIds]);
+
+  // Keep "Your Messages" live: a mentor reply or a thank-you can land while
+  // the student is already sitting on this page, not just on next visit.
+  useEffect(() => {
+    const onUpdate = () => setMsgRefresh((n) => n + 1);
+    window.addEventListener('waypoint-requests-updated', onUpdate);
+    return () => window.removeEventListener('waypoint-requests-updated', onUpdate);
+  }, []);
 
   // Arrived here carrying a goal typed on the home page, and/or a section to
-  // scroll straight to (from a nav click made elsewhere).
+  // scroll straight to (from a nav click made elsewhere). Keyed on
+  // location.state itself (not just mount) so clicking something like
+  // "View all" while already on this page still re-triggers the scroll.
   useEffect(() => {
     const state = location.state || {};
     if (state.goal) setGoal(state.goal);
     if (state.scrollTo) {
       const timer = setTimeout(() => {
         document.getElementById(state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+        // Clear the state only *after* the scroll fires — clearing it up
+        // front re-triggers this same effect (new location.state), and its
+        // cleanup would cancel this very timer before it ever runs.
+        navigate('.', { replace: true, state: {} });
       }, 60);
-      navigate('.', { replace: true, state: {} });
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.state]);
 
   return (
     <>
@@ -59,7 +79,7 @@ export default function FeaturesPage({ toast }) {
         points={points} setPoints={setPoints}
         setCallsScheduled={setCallsScheduled}
         setMilestonesCompleted={setMilestonesCompleted}
-        onRequestSent={() => setMsgRefresh((n) => n + 1)}
+        onRequestSent={(id) => { setMsgRefresh((n) => n + 1); if (id) setMySentRequestIds((prev) => (prev.includes(id) ? prev : [...prev, id])); }}
       />
       {myMessages.length > 0 && (
         <section style={{ paddingTop: 0 }}>
@@ -75,6 +95,7 @@ export default function FeaturesPage({ toast }) {
                   ) : (
                     <p className="your-message-waiting">{t.match.awaitingReply(r.mentorName.split(' ')[0])}</p>
                   )}
+                  {r.thankYouSentAt && <p className="your-message-thanked">{t.match.thankYouLoggedNote}</p>}
                 </div>
               ))}
             </div>

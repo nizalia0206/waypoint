@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
 import { getRequests, updateRequest } from '../data/requestsStore';
@@ -8,6 +9,8 @@ const SLOTS = ['Tue 4:00 PM', 'Wed 11:00 AM', 'Thu 6:30 PM'];
 export default function MentorPage({ toast }) {
   const { t } = useSite();
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [points, setPoints] = useState(1240);
   const [pending, setPending] = useState(t.mentor.requests);
   const [accepted, setAccepted] = useState([]);
@@ -31,6 +34,24 @@ export default function MentorPage({ toast }) {
     window.addEventListener('waypoint-requests-updated', onUpdate);
     return () => window.removeEventListener('waypoint-requests-updated', onUpdate);
   }, []);
+
+  // "View all" from the notification dropdown lands here with a section to
+  // jump to — keyed on location.state itself, not just mount, so it still
+  // fires even when the mentor was already on this page.
+  useEffect(() => {
+    const state = location.state || {};
+    if (state.scrollTo) {
+      const timer = setTimeout(() => {
+        document.getElementById(state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+        // Clear the state only *after* the scroll fires — clearing it up
+        // front re-triggers this same effect (new location.state), and its
+        // cleanup would cancel this very timer before it ever runs.
+        navigate('.', { replace: true, state: {} });
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   const accept = (req) => {
     setPending((prev) => prev.filter((r) => r.name !== req.name));
@@ -112,7 +133,7 @@ export default function MentorPage({ toast }) {
             <div className="trail-record-points">{t.rewards.pointsSecondary(points)}</div>
           </div>
 
-          <div className="mentor-requests">
+          <div className="mentor-requests" id="requests">
             <h4>{t.mentor.pendingTitle}</h4>
 
             {pendingReal.length > 0 && (
@@ -195,7 +216,7 @@ export default function MentorPage({ toast }) {
         </div>
 
         {thankYous.length > 0 && (
-          <div className="mentor-thankyous">
+          <div className="mentor-thankyous" id="thankyous">
             <h4>{t.mentor.thankYouTitle}</h4>
             {thankYous.map((r) => (
               <div className="mentor-thankyou-item" key={r.id}>

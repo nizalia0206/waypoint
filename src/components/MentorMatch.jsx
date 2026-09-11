@@ -133,7 +133,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
     const text = draftMsg.trim();
     if (!text || msgSent) return;
     const studentName = (user && user.role === 'student') ? user.name : 'A student (guest)';
-    addRequest({
+    const created = addRequest({
       studentName,
       isRealUser: !!(user && user.role === 'student'),
       goal: goal || '',
@@ -146,7 +146,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
     });
     setMsgSent(true);
     toast(t.match.messageSent);
-    onRequestSent?.();
+    onRequestSent?.(created.id);
   };
 
   const pickSlot = (slot) => {
@@ -175,7 +175,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
       createdAt: Date.now(),
     });
     setRequestId(created.id);
-    onRequestSent?.();
+    onRequestSent?.(created.id);
   };
 
   const toggleDone = (i) => {
@@ -297,7 +297,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
       )}
 
       {roomLink && (
-        <div className="mentor-feedback">
+        <div className="mentor-feedback" id="feedback">
           <span className="eyebrow">{t.match.feedbackTitle}</span>
           <p className="mentor-feedback-sub">{t.match.feedbackSub}</p>
           {feedbackSaved ? (
@@ -319,7 +319,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
               <button className="ask-btn primary" onClick={submitFeedback}>{t.match.submitFeedback}</button>
             </>
           )}
-          <button className="mentor-draft-link" onClick={sendThankYou} disabled={thankYouSent} style={{ marginTop: 14 }}>
+          <button className="mentor-draft-link mentor-thankyou-cta" onClick={sendThankYou} disabled={thankYouSent}>
             {thankYouSent ? t.match.thankYouSent(firstName) : t.match.sendThankYou(firstName)}
           </button>
         </div>
