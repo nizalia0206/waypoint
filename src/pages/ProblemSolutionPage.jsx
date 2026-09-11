@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../context/SiteContext';
 import { getFeedback } from '../data/requestsStore';
+import OutcomesChart from '../components/OutcomesChart';
 
 const OUTCOME_KEYS = ['understood', 'cv', 'internship', 'interview', 'courseAdvice', 'decision', 'another'];
 
@@ -61,14 +62,14 @@ export default function ProblemSolutionPage() {
     const feedback = getFeedback();
     const total = feedback.length;
     if (total === 0) return null;
-    const counts = OUTCOME_KEYS.map((key) => ({
-      key,
-      count: feedback.filter((f) => f.outcomes && f.outcomes[key]).length,
-    })).sort((a, b) => b.count - a.count);
-    const top = counts[0];
-    if (!top || top.count === 0) return null;
-    return { total, top, pct: Math.round((top.count / total) * 100) };
-  }, []);
+    const segments = OUTCOME_KEYS
+      .map((key) => ({ key, label: t.match.feedbackOutcomes[key], count: feedback.filter((f) => f.outcomes && f.outcomes[key]).length }))
+      .filter((c) => c.count > 0)
+      .sort((a, b) => b.count - a.count);
+    if (!segments.length) return null;
+    const top = segments[0];
+    return { total, top, pct: Math.round((top.count / total) * 100), segments };
+  }, [t]);
 
   return (
     <section id="problem-solution" style={{ paddingTop: 48 }}>
@@ -126,12 +127,49 @@ export default function ProblemSolutionPage() {
         <div className="ps-block ps-impact">
           <span className="eyebrow">{ps.impactTag}</span>
           {impact ? (
-            <p className="ps-impact-stat">
-              <strong>{impact.pct}%</strong> {ps.impactPrefix} <em>&ldquo;{t.match.feedbackOutcomes[impact.top.key]}&rdquo;</em> {ps.impactSuffix(impact.total)}
-            </p>
+            <div className="ps-impact-body">
+              <p className="ps-impact-stat">
+                <strong>{impact.pct}%</strong> {ps.impactPrefix} <em>&ldquo;{impact.top.label}&rdquo;</em> {ps.impactSuffix(impact.total)}
+              </p>
+              <OutcomesChart segments={impact.segments} total={impact.total} repliesLabel={impact.total === 1 ? ps.chartReplySingular : ps.chartReplyPlural} emptyLabel={ps.impactEmpty} />
+            </div>
           ) : (
             <p className="ps-impact-empty">{ps.impactEmpty}</p>
           )}
+        </div>
+
+        <div className="ps-block ps-comparison">
+          <span className="eyebrow">{ps.comparisonTag}</span>
+          <h4>{ps.comparisonTitle}</h4>
+          <p className="ps-comparison-intro">{ps.comparisonIntro}</p>
+          <div className="comparison-table-wrap">
+            <table className="comparison-table">
+              <thead>
+                <tr>
+                  {ps.comparisonHeaders.map((h, i) => (
+                    <th key={i} className={i === ps.comparisonHeaders.length - 1 ? 'comparison-highlight' : undefined}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ps.comparisonRows.map((row, i) => (
+                  <tr key={i}>
+                    <td className="comparison-feature">{row.feature}</td>
+                    <td>{row.linkedin}</td>
+                    <td>{row.careerOffice}</td>
+                    <td className="comparison-highlight">{row.waypoint}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="ps-comparison-novelty"><strong>{ps.noveltyTag}</strong> {ps.noveltyText}</p>
+        </div>
+
+        <div className="ps-block ps-future">
+          <span className="eyebrow">{ps.futureTag}</span>
+          <h4>{ps.futureTitle}</h4>
+          <p style={{ fontSize: '16.5px', lineHeight: 1.7, maxWidth: '68ch' }}>{ps.futureText}</p>
         </div>
 
         <div className="ps-block">

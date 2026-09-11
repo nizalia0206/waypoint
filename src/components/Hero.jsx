@@ -39,6 +39,14 @@ export default function Hero({ heroGoal, setHeroGoal, onFindTrail }) {
           <div className="hero-mark">{t.hero.mark}</div>
           <h1 className="hero-h1"><StaggeredWords text={t.hero.h1} /></h1>
           <p className="hero-sub">{t.hero.sub}</p>
+          <ul className="hero-quick-answers" aria-label="What, who, and why">
+            {t.hero.quickAnswers.map((qa) => (
+              <li key={qa.label}>
+                <span className="hqa-label">{qa.label}</span>
+                <span className="hqa-value">{qa.value}</span>
+              </li>
+            ))}
+          </ul>
           <div className="goal-form">
             <input
               type="text"
