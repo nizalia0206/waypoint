@@ -53,6 +53,10 @@ export default function SiteTour() {
     setTourStep(i => i + 1);
   };
   const handleBack = () => setTourStep(i => Math.max(0, i - 1));
+  const handleSkip = () => {
+    endTour();
+    navigate('/');
+  };
 
   return (
     <>
@@ -64,7 +68,7 @@ export default function SiteTour() {
             <div className="tour-card-title">{step.title}</div>
             <div className="tour-card-progress">{tourStep + 1} / {steps.length}</div>
           </div>
-          <button className="tour-skip" onClick={endTour}>{t.tour.skip}</button>
+          <button className="tour-skip" onClick={handleSkip}>{t.tour.skip}</button>
         </div>
         <p className="tour-card-text">{step.text}</p>
         <div className="tour-card-actions">
