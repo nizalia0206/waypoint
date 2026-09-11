@@ -82,7 +82,11 @@ export default function SiteTour() {
           </div>
           <button className="tour-skip" onClick={handleSkip}>{t.tour.skip}</button>
         </div>
-        <p className="tour-card-text">{step.text}</p>
+        <p className="tour-card-text">
+          {step.intro && <>{step.intro} </>}
+          {step.lead && <strong>{step.lead} </strong>}
+          {step.text}
+        </p>
         <div className="tour-card-actions">
           <button className="tour-btn" onClick={handleBack} disabled={isFirst}>{t.tour.back}</button>
           <div className="tour-dots">

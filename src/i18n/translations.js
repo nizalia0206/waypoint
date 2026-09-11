@@ -375,7 +375,7 @@ export const translations = {
       next: 'Next',
       finish: 'Got it',
       steps: [
-        { targetId: 'hero', page: '/', title: 'Welcome to Waypoint', text: "I'm Trace. First time here? This tour is worth the two minutes — it covers everything from matching to a mentor's own side of things. Already know your way around? Skip straight in." },
+        { targetId: 'hero', page: '/', title: 'Welcome to Waypoint', intro: "I'm Trace.", lead: 'First time here?', text: "This tour is worth the two minutes — it covers everything from matching to a mentor's own side of things. Already know your way around? Skip straight in." },
         { targetId: 'journey', page: '/features', title: 'Trace shows you the way', text: "Five waypoints, animated — click any marker to jump straight to it." },
         { targetId: 'match', page: '/features', title: 'Find a mentor', text: 'This one scans the alumni pool live — set a goal and it finds the closest-matching alum from the pool. Sign in first if you want replies and thank-yous to actually show up in the notification bell up top — as a guest, that bell stays hidden.' },
         { targetId: null, page: null, title: 'After a call is booked', text: 'Once you pick a time slot, a short "How did this help?" checklist appears — plus a one-click thank-you to your mentor. That checklist is the real data behind Waypoint\'s impact stats on the Problem & Solution page.' },
@@ -781,7 +781,7 @@ export const translations = {
       next: 'التالي',
       finish: 'فهمت',
       steps: [
-        { targetId: 'hero', page: '/', title: 'مرحبًا بك في وايبوينت', text: 'أنا تريس. هل هذه أول زيارة لك؟ هذه الجولة تستحق الدقيقتين — تغطي كل شيء من المطابقة إلى واجهة الموجّه نفسه. تعرف الموقع بالفعل؟ تخطَّها وابدأ مباشرة.' },
+        { targetId: 'hero', page: '/', title: 'مرحبًا بك في وايبوينت', intro: 'أنا تريس.', lead: 'هل هذه أول زيارة لك؟', text: 'هذه الجولة تستحق الدقيقتين — تغطي كل شيء من المطابقة إلى واجهة الموجّه نفسه. تعرف الموقع بالفعل؟ تخطَّها وابدأ مباشرة.' },
         { targetId: 'journey', page: '/features', title: 'تريس يدلّك على الطريق', text: 'خمس محطات، متحركة — انقر أي علامة للانتقال إليها مباشرة.' },
         { targetId: 'match', page: '/features', title: 'ابحث عن موجّه', text: 'هذا الجزء يفحص مجموعة الخريجين مباشرة — حدد هدفًا وسيجد أقرب خريج مطابق من المجموعة. سجّل الدخول أولاً إذا كنت تريد أن تظهر الردود ورسائل الشكر فعليًا في جرس الإشعارات أعلى الصفحة — فكزائر، يبقى ذلك الجرس مخفيًا.' },
         { targetId: null, page: null, title: 'بعد حجز المكالمة', text: 'بمجرد اختيار موعد، تظهر قائمة قصيرة بعنوان "كيف ساعدك هذا؟" — بالإضافة إلى زر شكر بضغطة واحدة لموجّهك. هذه القائمة هي البيانات الحقيقية وراء إحصاءات أثر وايبوينت في صفحة المشكلة والحل.' },
