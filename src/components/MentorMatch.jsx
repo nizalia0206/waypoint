@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ALUMNI } from '../data/alumni';
 import { useSite } from '../context/SiteContext';
 import { useAuth } from '../context/AuthContext';
@@ -50,6 +50,38 @@ function bestLocalMatch(major, goal, expTags) {
   return ALUMNI.slice()
     .map((alum) => ({ alum, score: scoreAlum(alum, { major, goal, expTags }) }))
     .sort((a, b) => b.score - a.score)[0].alum;
+}
+
+// Turns the internal weighted score into a percentage + a short list of the
+// SPECIFIC real signals that drove it — computed client-side from the actual
+// alum data every time (regardless of whether the live API or the offline
+// fallback picked the alum), so the number is always grounded in something
+// real rather than decorative.
+function buildMatchBreakdown(alum, { major, goal, expTags }) {
+  const goalWords = new Set(keywords(goal));
+  const alumWords = keywords([alum.industry, alum.currentRole, alum.path[alum.path.length - 1]].join(' '));
+  const sharedWord = alumWords.find((w) => goalWords.has(w));
+  const sharedExp = (alum.experienceTags || []).find((tag) => (expTags || []).includes(tag));
+  const sameMajor = alum.major === major;
+  const trusted = (alum.studentsHelped || 0) >= 10;
+
+  const factors = [
+    { key: 'uni', label: 'sameUniversity' },
+    sameMajor ? { key: 'major', label: 'sameMajor', value: alum.major } : null,
+    sharedWord ? { key: 'field', label: 'sameField', value: sharedWord } : null,
+    sharedExp ? { key: 'exp', label: 'sharedExperience', value: sharedExp } : null,
+    trusted ? { key: 'trust', label: 'trustedMentor' } : null,
+  ].filter(Boolean);
+
+  // Rough ceiling of what scoreAlum() could plausibly produce (major match +
+  // two keyword hits + a shared experience tag + a very active mentor).
+  // Not a hard cap on the raw score, just the scale used to turn it into a
+  // percentage that stays in a believable 70–98% band either way.
+  const maxPlausible = 136;
+  const score = scoreAlum(alum, { major, goal, expTags });
+  const percent = Math.max(70, Math.min(98, Math.round(60 + (score / maxPlausible) * 38)));
+
+  return { percent, factors };
 }
 
 // The route shows an alum's actual dated history, but a checklist item like
@@ -154,9 +186,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
     const room = 'waypoint-' + Math.random().toString(36).slice(2, 8);
     const link = `meet.waypoint.app/${room}`;
     setRoomLink(link);
-    setPoints((p) => p + 40);
     setCallsScheduled((c) => c + 1);
-    toast('+40 Trail Points');
 
     // Real persisted request the mentor will actually see in Mentor View —
     // uses the logged-in student's real name when one exists, per the "never
@@ -211,6 +241,25 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
         <p className="mentor-reveal-line">{t.match.someoneWalked}</p>
         <p className="mentor-reveal-name">{t.match.didStatement(firstName)}</p>
       </div>
+      {match.percent != null && (
+        <div className="mentor-match-score">
+          <div className="mentor-match-score-headline">
+            <span className="mentor-match-score-num">{match.percent}%</span>
+            <span className="mentor-match-score-label">{t.match.routeMatchLabel}</span>
+          </div>
+          <div className="mentor-match-why">
+            <span className="mentor-match-why-label">{t.match.whyLabel}</span>
+            <ul className="mentor-match-factors">
+              {match.factors.map((f) => (
+                <li key={f.key}>
+                  <span className="mentor-match-check" aria-hidden="true">✓</span>
+                  {t.match.matchFactors[f.label](f.value)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
       <div className="mentor-meta">{alum.name} · {alum.major}, Class of {alum.gradYear}</div>
       <div className="mentor-trust-row">
         <span className="mentor-verified-badge">
@@ -237,6 +286,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
 
       <div className="next-waypoints">
         <span className="eyebrow">{t.match.nextWaypoints}</span>
+        <p className="next-waypoints-hint">{t.match.nextWaypointsHint}</p>
         <div className="next-waypoint-list">
           {ASK_VALUES.map((v, i) => (
             <button
@@ -250,6 +300,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
                 <span className="next-waypoint-name">{t.match.ask[v]}</span>
                 <span className="next-waypoint-desc">{t.match.askDescriptions[v]}</span>
               </span>
+              <span className="next-waypoint-chevron" aria-hidden="true">›</span>
               <span className="next-waypoint-dot" />
             </button>
           ))}
@@ -301,7 +352,19 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
           <span className="eyebrow">{t.match.feedbackTitle}</span>
           <p className="mentor-feedback-sub">{t.match.feedbackSub}</p>
           {feedbackSaved ? (
-            <p className="mentor-feedback-saved">{t.match.feedbackSaved}</p>
+            <div className="mentor-outcome-screen">
+              <span className="eyebrow">{t.match.outcomeTag}</span>
+              {Object.keys(feedbackChecked).some((k) => feedbackChecked[k]) ? (
+                <ul className="mentor-outcome-list">
+                  {FEEDBACK_OUTCOME_KEYS.filter((key) => feedbackChecked[key]).map((key) => (
+                    <li key={key}>&ldquo;{t.match.feedbackOutcomes[key]}&rdquo;</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mentor-outcome-empty">{t.match.outcomeEmpty}</p>
+              )}
+              <p className="mentor-outcome-note">{t.match.outcomeNote(firstName)}</p>
+            </div>
           ) : (
             <>
               <div className="mentor-feedback-list">
@@ -352,14 +415,31 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
               key={i}
               className={`follow-item${done[i] ? ' done' : ''}`}
               onClick={() => toggleDone(i)}
+              role="checkbox"
+              aria-checked={done[i]}
+              aria-label={genericizeMilestone(step)}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleDone(i);
+                }
+              }}
             >
               <div className="follow-check">✓</div>
               <div className="follow-text">{genericizeMilestone(step)}</div>
             </div>
           ))}
         </div>
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(doneCount / alum.path.length) * 100}%` }}></div>
+        <div className="progress-bar-wrap">
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: `${(doneCount / alum.path.length) * 100}%` }}></div>
+          </div>
+          <Mascot
+            className="progress-trace"
+            alt=""
+            style={{ left: `${Math.min(100, (doneCount / alum.path.length) * 100)}%` }}
+          />
         </div>
         <div className="progress-label">{t.match.progressLabel(doneCount, alum.path.length)}</div>
       </div>
@@ -369,7 +449,7 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export default function MentorMatch({ goal, setGoal, toast, points, setPoints, setCallsScheduled, setMilestonesCompleted, onRequestSent }) {
+export default function MentorMatch({ goal, setGoal, toast, points, setPoints, setCallsScheduled, setMilestonesCompleted, onRequestSent, autoSearchToken }) {
   const { t, lang, aslEnabled } = useSite();
   const [major, setMajor] = useState(MAJOR_VALUES[0]);
   const [year, setYear] = useState('Sophomore');
@@ -447,11 +527,23 @@ Return ONLY valid JSON, no markdown fences: {"alumniId":1,"reason":"...","icebre
     await sleep(650);
     setStage('scanning');
     const [found] = await Promise.all([apiPromise, sleep(900)]);
+    // Always compute the percentage + factor breakdown ourselves, client-side,
+    // from the actual chosen alum — regardless of whether the live API or the
+    // offline fallback did the picking — so it's never just decorative text.
+    found.match = { ...found.match, ...buildMatchBreakdown(found.alum, { major, goal: g, expTags }) };
     setStage('found');
     await sleep(550);
     setStage(null);
     setResult(found);
   };
+
+  // A goal typed on the homepage hero arrives here pre-filled — auto-run the
+  // search immediately instead of making the student click "Find my mentor"
+  // a second time, so the goal → match reveal happens in one motion.
+  useEffect(() => {
+    if (autoSearchToken) findMentor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSearchToken]);
 
   return (
     <section id="match">

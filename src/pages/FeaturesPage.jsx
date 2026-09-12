@@ -14,6 +14,7 @@ export default function FeaturesPage({ toast }) {
   const { t } = useSite();
   const { user } = useAuth();
   const [goal, setGoal] = useState('Product management at a tech startup');
+  const [autoSearchToken, setAutoSearchToken] = useState(0);
   const [points, setPoints] = usePoints();
   const [callsScheduled, setCallsScheduled] = useState(0);
   const [milestonesCompleted, setMilestonesCompleted] = useState(0);
@@ -50,6 +51,7 @@ export default function FeaturesPage({ toast }) {
   useEffect(() => {
     const state = location.state || {};
     if (state.goal) setGoal(state.goal);
+    if (state.autoSearch) setAutoSearchToken(Date.now());
     if (state.scrollTo) {
       const timer = setTimeout(() => {
         document.getElementById(state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
@@ -80,6 +82,7 @@ export default function FeaturesPage({ toast }) {
         setCallsScheduled={setCallsScheduled}
         setMilestonesCompleted={setMilestonesCompleted}
         onRequestSent={(id) => { setMsgRefresh((n) => n + 1); if (id) setMySentRequestIds((prev) => (prev.includes(id) ? prev : [...prev, id])); }}
+        autoSearchToken={autoSearchToken}
       />
       {myMessages.length > 0 && (
         <section style={{ paddingTop: 0 }}>

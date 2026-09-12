@@ -6,6 +6,14 @@ import OutcomesChart from '../components/OutcomesChart';
 
 const OUTCOME_KEYS = ['understood', 'cv', 'internship', 'interview', 'courseAdvice', 'decision', 'another'];
 
+// HashRouter treats anything after "#" as a route, so a plain <a href="#id">
+// would hijack navigation (e.g. away from /problem-solution) instead of
+// scrolling. Scroll manually and never touch location.hash.
+function scrollToStage(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function ThinkingIllustration() {
   return (
     <svg viewBox="0 0 200 240" width="200" height="240" aria-hidden="true">
@@ -54,6 +62,8 @@ function SolutionIllustration() {
   );
 }
 
+const STAGE_TOTAL = 5;
+
 export default function ProblemSolutionPage() {
   const { t } = useSite();
   const ps = t.ps;
@@ -71,6 +81,8 @@ export default function ProblemSolutionPage() {
     return { total, top, pct: Math.round((top.count / total) * 100), segments };
   }, [t]);
 
+  const stages = ps.stageNav;
+
   return (
     <section id="problem-solution" style={{ paddingTop: 48 }}>
       <div className="wrap">
@@ -79,102 +91,186 @@ export default function ProblemSolutionPage() {
           <h2>{ps.head}</h2>
         </div>
 
-        <div className="ps-block ps-block-illustrated">
-          <div className="ps-block-text">
-            <h4>{ps.problemTitle}</h4>
-            <p className="ps-drop">{ps.problemText}</p>
-          </div>
-          <div className="ps-illustration"><ThinkingIllustration /></div>
-        </div>
-
-        <div className="ps-stat-row">
-          {ps.stats.map((s) => (
-            <div className="ps-stat" key={s.value + s.label}>
-              <b>{s.value}</b>
+        <nav className="ps-stagenav" aria-label={ps.stageNavLabel}>
+          {stages.map((s, i) => (
+            <button key={s.id} type="button" className="ps-stagenav-item" onClick={() => scrollToStage(s.id)}>
+              <span className="ps-stagenav-num">{String(i + 1).padStart(2, '0')}</span>
               <span>{s.label}</span>
-              <a className="ps-source" href={s.sourceUrl} target="_blank" rel="noopener noreferrer">
-                {s.sourceName}
-              </a>
-            </div>
+            </button>
           ))}
+        </nav>
+
+        {/* 1 — PROBLEM */}
+        <div id="problem" className="ps-stage">
+          <span className="eyebrow">{ps.stageLabel(1, STAGE_TOTAL)} · {ps.problemTitle}</span>
+          <div className="ps-block ps-block-illustrated">
+            <div className="ps-block-text">
+              <p className="ps-drop">{ps.problemText}</p>
+            </div>
+            <div className="ps-illustration"><ThinkingIllustration /></div>
+          </div>
         </div>
 
-        <div className="ps-block">
-          <h4>{ps.researchTitle}</h4>
-          <ol className="research-list">
-            {ps.research.map((r, i) => (
-              <li key={i}>
-                <span className="mile">{String(i + 1).padStart(2, '0')}</span>
-                <div>
-                  <div>{r.text}</div>
-                  <a className="ps-source" href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
-                    {r.sourceName}
-                  </a>
-                </div>
-              </li>
+        {/* 2 — EVIDENCE / SURVEY */}
+        <div id="evidence" className="ps-stage">
+          <span className="eyebrow">{ps.stageLabel(2, STAGE_TOTAL)} · {ps.evidenceTag}</span>
+          <h4>{ps.evidenceTitle}</h4>
+          <p className="ps-comparison-intro">{ps.evidenceIntro}</p>
+
+          <div className="ps-stat-row">
+            {ps.stats.map((s) => (
+              <div className="ps-stat" key={s.value + s.label}>
+                <b>{s.value}</b>
+                <span>{s.label}</span>
+                <a className="ps-source" href={s.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  {s.sourceName}
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <div className="ps-block">
+            <h4>{ps.researchTitle}</h4>
+            <ol className="research-list">
+              {ps.research.map((r, i) => (
+                <li key={i}>
+                  <span className="mile">{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <div>{r.text}</div>
+                    <a className="ps-source" href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
+                      {r.sourceName}
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="ps-block ps-own-survey">
+            <span className="eyebrow">{ps.ownSurveyTag}</span>
+            <h4>{ps.ownSurveyTitle}</h4>
+            <p className="ps-comparison-intro">{ps.ownSurveyIntro}</p>
+            <div className="ps-survey-grid">
+              <div className="ps-survey-col">
+                <span className="ps-survey-col-label">{ps.ownSurveyStudentsLabel}</span>
+                {ps.ownSurveyStudentItems.map((item, i) => (
+                  <div className="ps-survey-item" key={i}>
+                    <b>{item.value}</b>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="ps-survey-col">
+                <span className="ps-survey-col-label">{ps.ownSurveyMentorsLabel}</span>
+                {ps.ownSurveyMentorItems.map((item, i) => (
+                  <div className="ps-survey-item" key={i}>
+                    <b>{item.value}</b>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="ps-survey-note">{ps.ownSurveyNote}</p>
+          </div>
+        </div>
+
+        {/* 3 — PROPOSED SOLUTION */}
+        <div id="solution" className="ps-stage">
+          <span className="eyebrow">{ps.stageLabel(3, STAGE_TOTAL)} · {ps.solutionTitle}</span>
+          <div className="ps-block ps-block-illustrated reverse">
+            <div className="ps-block-text">
+              <p style={{ fontSize: '18px', lineHeight: 1.75, maxWidth: '70ch' }}>{ps.solutionText}</p>
+            </div>
+            <div className="ps-illustration"><SolutionIllustration /></div>
+          </div>
+        </div>
+
+        {/* 4 — HOW THE WEBSITE SOLVES IT */}
+        <div id="how-it-works" className="ps-stage">
+          <span className="eyebrow">{ps.stageLabel(4, STAGE_TOTAL)} · {ps.howTag}</span>
+          <h4>{ps.howTitle}</h4>
+          <p className="ps-comparison-intro">{ps.howIntro}</p>
+
+          <div className="ps-how-grid">
+            {ps.howItems.map((item, i) => (
+              <div className="ps-how-card" key={i}>
+                <span className="ps-how-problem">{ps.howProblemLabel} {item.problem}</span>
+                <h5>{item.feature}</h5>
+                <p>{item.detail}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="ps-block ps-comparison" style={{ marginTop: 40 }}>
+            <span className="eyebrow">{ps.comparisonTag}</span>
+            <h4>{ps.comparisonTitle}</h4>
+            <p className="ps-comparison-intro">{ps.comparisonIntro}</p>
+            <div className="comparison-table-wrap">
+              <table className="comparison-table">
+                <thead>
+                  <tr>
+                    {ps.comparisonHeaders.map((h, i) => (
+                      <th key={i} className={i === ps.comparisonHeaders.length - 1 ? 'comparison-highlight' : undefined}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ps.comparisonRows.map((row, i) => (
+                    <tr key={i}>
+                      <td className="comparison-feature">{row.feature}</td>
+                      <td>{row.linkedin}</td>
+                      <td>{row.careerOffice}</td>
+                      <td className="comparison-highlight">{row.waypoint}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="ps-comparison-novelty"><strong>{ps.noveltyTag}</strong> {ps.noveltyText}</p>
+          </div>
+        </div>
+
+        {/* 5 — DEMO */}
+        <div id="demo" className="ps-stage">
+          <span className="eyebrow">{ps.stageLabel(5, STAGE_TOTAL)} · {ps.demoTag}</span>
+          <h4>{ps.demoTitle}</h4>
+          <p className="ps-comparison-intro">{ps.demoIntro}</p>
+
+          <div className="ps-demo-actions">
+            <Link to="/features" className="btn-trail">{ps.demoStudentCta}</Link>
+            <Link to="/mentor" className="btn-outline">{ps.demoMentorCta}</Link>
+          </div>
+
+          <ol className="ps-demo-steps">
+            {ps.demoSteps.map((step, i) => (
+              <li key={i}><span className="mile">{String(i + 1).padStart(2, '0')}</span><span>{step}</span></li>
             ))}
           </ol>
-        </div>
 
-        <div className="ps-block ps-block-illustrated reverse">
-          <div className="ps-block-text">
-            <h4>{ps.solutionTitle}</h4>
-            <p style={{ fontSize: '16.5px', lineHeight: 1.7, maxWidth: '68ch' }}>{ps.solutionText}</p>
+          <div className="ps-block ps-impact" style={{ marginTop: 32 }}>
+            <span className="eyebrow">{ps.impactTag}</span>
+            {impact ? (
+              <div className="ps-impact-body">
+                <p className="ps-impact-stat">
+                  <strong>{impact.pct}%</strong> {ps.impactPrefix} <em>&ldquo;{impact.top.label}&rdquo;</em> {ps.impactSuffix(impact.total)}
+                </p>
+                <OutcomesChart segments={impact.segments} total={impact.total} repliesLabel={impact.total === 1 ? ps.chartReplySingular : ps.chartReplyPlural} emptyLabel={ps.impactEmpty} />
+              </div>
+            ) : (
+              <p className="ps-impact-empty">{ps.impactEmpty}</p>
+            )}
           </div>
-          <div className="ps-illustration"><SolutionIllustration /></div>
-        </div>
 
-        <div className="ps-block ps-impact">
-          <span className="eyebrow">{ps.impactTag}</span>
-          {impact ? (
-            <div className="ps-impact-body">
-              <p className="ps-impact-stat">
-                <strong>{impact.pct}%</strong> {ps.impactPrefix} <em>&ldquo;{impact.top.label}&rdquo;</em> {ps.impactSuffix(impact.total)}
-              </p>
-              <OutcomesChart segments={impact.segments} total={impact.total} repliesLabel={impact.total === 1 ? ps.chartReplySingular : ps.chartReplyPlural} emptyLabel={ps.impactEmpty} />
-            </div>
-          ) : (
-            <p className="ps-impact-empty">{ps.impactEmpty}</p>
-          )}
-        </div>
-
-        <div className="ps-block ps-comparison">
-          <span className="eyebrow">{ps.comparisonTag}</span>
-          <h4>{ps.comparisonTitle}</h4>
-          <p className="ps-comparison-intro">{ps.comparisonIntro}</p>
-          <div className="comparison-table-wrap">
-            <table className="comparison-table">
-              <thead>
-                <tr>
-                  {ps.comparisonHeaders.map((h, i) => (
-                    <th key={i} className={i === ps.comparisonHeaders.length - 1 ? 'comparison-highlight' : undefined}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ps.comparisonRows.map((row, i) => (
-                  <tr key={i}>
-                    <td className="comparison-feature">{row.feature}</td>
-                    <td>{row.linkedin}</td>
-                    <td>{row.careerOffice}</td>
-                    <td className="comparison-highlight">{row.waypoint}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="ps-block ps-future" style={{ marginTop: 32 }}>
+            <span className="eyebrow">{ps.futureTag}</span>
+            <h4>{ps.futureTitle}</h4>
+            <p style={{ fontSize: '18px', lineHeight: 1.75, maxWidth: '70ch' }}>{ps.futureText}</p>
           </div>
-          <p className="ps-comparison-novelty"><strong>{ps.noveltyTag}</strong> {ps.noveltyText}</p>
-        </div>
-
-        <div className="ps-block ps-future">
-          <span className="eyebrow">{ps.futureTag}</span>
-          <h4>{ps.futureTitle}</h4>
-          <p style={{ fontSize: '16.5px', lineHeight: 1.7, maxWidth: '68ch' }}>{ps.futureText}</p>
         </div>
 
         <div className="ps-block">
           <h4>{ps.whyTitle}</h4>
-          <p style={{ fontSize: '16.5px', lineHeight: 1.7, maxWidth: '68ch' }}>{ps.whyText}</p>
+          <p style={{ fontSize: '18px', lineHeight: 1.75, maxWidth: '70ch' }}>{ps.whyText}</p>
           <div className="ps-callout">{ps.callout}</div>
         </div>
       </div>

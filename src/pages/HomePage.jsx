@@ -10,7 +10,7 @@ export default function HomePage() {
 
   const handleFindTrail = () => {
     const v = heroGoal.trim();
-    navigate('/features', { state: { scrollTo: 'match', ...(v ? { goal: v } : {}) } });
+    navigate('/features', { state: { scrollTo: 'match', ...(v ? { goal: v, autoSearch: true } : {}) } });
   };
 
   return (

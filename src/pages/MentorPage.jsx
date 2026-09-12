@@ -175,7 +175,7 @@ export default function MentorPage({ toast }) {
               <p className="results-empty">{t.mentor.pendingEmpty}</p>
             ) : pending.length > 0 && (
               <>
-                {pendingReal.length > 0 && <span className="mile" style={{ display: 'block', marginBottom: 10 }}>{t.mentor.sampleLabel}</span>}
+                {pending.length > 0 && <span className="mile" style={{ display: 'block', marginBottom: 10 }}>{t.mentor.sampleLabel}</span>}
                 <div className="mentor-request-list">
                   {pending.map((r, i) => (
                     <div className="mentor-request-row" key={r.name}>
