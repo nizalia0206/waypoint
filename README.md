@@ -65,6 +65,17 @@ Two short surveys we ran ourselves, with real UWL RAK students and alumni — be
 
 Class mix of respondents: 20% first-year, 10% second-year, 20% third-year, 20% fourth-year, 30% graduate.
 
+<table>
+<tr>
+<td><img src="docs/screenshots/survey/student-01-year.png" width="380" alt="Student survey: what year of university are you in" /></td>
+<td><img src="docs/screenshots/survey/student-02-has-mentor.png" width="380" alt="Student survey: do you currently have a mentor" /></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/survey/student-03-biggest-reason.png" width="380" alt="Student survey: if no, what's the biggest reason" /></td>
+<td><img src="docs/screenshots/survey/student-04-most-likely.png" width="380" alt="Student survey: what would make you most likely to ask an alum for help" /></td>
+</tr>
+</table>
+
 ### Alumni & mentors surveyed — n = 10
 
 | Result | Finding |
@@ -75,6 +86,21 @@ Class mix of respondents: 20% first-year, 10% second-year, 20% third-year, 20% f
 | **60%** | say small recognition (a badge, campus perks) would tip them toward helping more |
 
 Real roles surveyed: Graphic Designer (TikTok), Graphic Designer (UWL RAK), Data Analyst (Tamimi), ACCA Intern (Deem), AI Engineer (IBM), Sales Manager (Emirates Reem Investments), Student Development Officer (UWL RAK), Software Developer (Shpper), and Tax Auditing Intern (Deloitte).
+
+<table>
+<tr>
+<td><img src="docs/screenshots/survey/mentor-01-role.png" width="380" alt="Mentor survey: what's your current role / year" /></td>
+<td><img src="docs/screenshots/survey/mentor-02-messaged.png" width="380" alt="Mentor survey: has a student ever reached out to you" /></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/survey/mentor-03-wouldnt-reply.png" width="380" alt="Mentor survey: biggest reason you wouldn't reply" /></td>
+<td><img src="docs/screenshots/survey/mentor-04-scheduled-ask.png" width="380" alt="Mentor survey: would a scheduled ask make you more likely to say yes" /></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/survey/mentor-05-recognition.png" width="380" alt="Mentor survey: would small recognition make you keep helping" /></td>
+<td></td>
+</tr>
+</table>
 
 Between the two surveys, there's primary evidence behind nearly every feature in the product: matching (80% of students), verification (60% of mentors), structured booking (100% of mentors), and outcome tracking (60% of students).
 
