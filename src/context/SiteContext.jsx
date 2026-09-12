@@ -10,9 +10,8 @@ function getInitialTheme() {
     const stored = localStorage.getItem(THEME_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
   } catch (e) { /* ignore */ }
-  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
+  // Default to light regardless of system preference — dark mode is opt-in
+  // via the Accessibility panel, not auto-applied from the OS setting.
   return 'light';
 }
 
