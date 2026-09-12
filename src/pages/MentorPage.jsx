@@ -19,7 +19,7 @@ export default function MentorPage({ toast }) {
   const [replyDrafts, setReplyDrafts] = useState({});
   const [openReplyId, setOpenReplyId] = useState(null);
 
-  const mentorName = (user && user.role === 'mentor') ? user.name : 'Zobia Khan';
+  const mentorName = (user && user.role === 'mentor') ? user.name : 'Zobia Hashmi';
   const mentorOutcome = (user && user.role === 'mentor') ? user.outcome : null;
   const pendingReal = realRequests.filter((r) => r.status === 'pending');
   const thankYous = realRequests

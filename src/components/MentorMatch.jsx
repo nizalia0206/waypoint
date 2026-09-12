@@ -81,7 +81,12 @@ function buildMatchBreakdown(alum, { major, goal, expTags }) {
   const score = scoreAlum(alum, { major, goal, expTags });
   const percent = Math.max(70, Math.min(98, Math.round(60 + (score / maxPlausible) * 38)));
 
-  return { percent, factors };
+  // If the student flagged shared-experience tags but the best overall match
+  // doesn't happen to hold any of them, say so honestly instead of silently
+  // dropping the input — a selection with no visible effect reads as broken.
+  const unmatchedExpTags = (expTags || []).filter((tag) => !(alum.experienceTags || []).includes(tag));
+
+  return { percent, factors, unmatchedExpTags };
 }
 
 // The route shows an alum's actual dated history, but a checklist item like
@@ -241,6 +246,15 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
         <p className="mentor-reveal-line">{t.match.someoneWalked}</p>
         <p className="mentor-reveal-name">{t.match.didStatement(firstName)}</p>
       </div>
+      <div className="mentor-meta">{alum.name} · {alum.major}, Class of {alum.gradYear}</div>
+
+      {match.factors && (
+        <div className="mentor-why-summary">
+          <p><span className="mentor-why-label">{t.match.whyMatchedLabel}</span> {match.factors.slice(0, 2).map((f) => t.match.matchFactorsShort[f.key]).join(' + ')}</p>
+          {alum.helpWith && <p><span className="mentor-why-label">{t.match.canHelpLabel}</span> {alum.helpWith.slice(0, 3).join(', ')}</p>}
+        </div>
+      )}
+
       {match.percent != null && (
         <div className="mentor-match-score">
           <div className="mentor-match-score-headline">
@@ -257,10 +271,14 @@ function MentorResult({ alum, match, askType, commLabel, goal, aslEnabled, m, on
                 </li>
               ))}
             </ul>
+            {match.unmatchedExpTags && match.unmatchedExpTags.length > 0 && (
+              <p className="mentor-match-unmatched">
+                {t.match.unmatchedExpNote(match.unmatchedExpTags.map((tag) => t.match.exp[tag] || tag).join(', '))}
+              </p>
+            )}
           </div>
         </div>
       )}
-      <div className="mentor-meta">{alum.name} · {alum.major}, Class of {alum.gradYear}</div>
       <div className="mentor-trust-row">
         <span className="mentor-verified-badge">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" aria-hidden="true">
