@@ -26,6 +26,37 @@
   --shadow-md:0 10px 26px rgba(30,36,32,0.1);
   --shadow-lg:0 18px 40px rgba(30,36,32,0.14);
 }
+
+/* NIGHT MODE — same token names, dark-appropriate values. Trail stays the
+   single primary (brightened for contrast on a dark surface), gold stays
+   the one accent, way stays functional-only. Kept as a deep forest-charcoal
+   rather than pure black to stay in the same warm, editorial family as the
+   paper theme rather than becoming a generic dark dashboard. */
+html[data-theme="dark"]{
+  --paper:#141F19;
+  --paper-card:#1B2922;
+  --paper-deep:#0F1712;
+  --line:#2E3D34;
+  --ink:#EDEAE0;
+  --ink-dim:#9FAAA1;
+  --trail:#3FA377;
+  --trail-dark:#5CC094;
+  --trail-soft:#1E3128;
+  --way:#E2827A;
+  --way-soft:#3A211F;
+  --gold:#D9AE63;
+  --gold-dark:#F0CB8C;
+  --gold-soft:#332A18;
+  --gold-light:#F3C86B;
+  --shadow-sm:0 4px 14px rgba(0,0,0,0.28);
+  --shadow-md:0 10px 26px rgba(0,0,0,0.34);
+  --shadow-lg:0 18px 40px rgba(0,0,0,0.4);
+}
+html[data-theme="dark"] nav.top{ background:rgba(20,31,25,0.92); }
+html[data-theme="dark"] .hero-scrim{ background:linear-gradient(100deg, rgba(10,14,11,0.88) 0%, rgba(10,14,11,0.65) 42%, rgba(10,14,11,0.32) 72%, rgba(10,14,11,0.45) 100%); }
+html[dir="rtl"][data-theme="dark"] .hero-scrim{ background:linear-gradient(260deg, rgba(10,14,11,0.88) 0%, rgba(10,14,11,0.65) 42%, rgba(10,14,11,0.32) 72%, rgba(10,14,11,0.45) 100%); }
+html[data-theme="dark"] .site-footer{ background:#0F1F17; }
+html[data-theme="dark"] ::selection{ background:var(--trail); color:#0F1712; }
 @media (max-width:880px){
   :root{ --nav-h:80px; }
 }

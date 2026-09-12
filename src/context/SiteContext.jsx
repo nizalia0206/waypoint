@@ -3,12 +3,25 @@ import { translations } from '../i18n/translations';
 
 const SiteContext = createContext(null);
 const TOUR_SEEN_KEY = 'waypoint_tour_seen_v1';
+const THEME_KEY = 'waypoint_theme_v1';
+
+function getInitialTheme() {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch (e) { /* ignore */ }
+  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+}
 
 export function SiteProvider({ children }) {
   const [lang, setLang] = useState('en');
   const [aslEnabled, setAslEnabled] = useState(false);
   const [tourActive, setTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(0);
+  const [theme, setThemeState] = useState(getInitialTheme);
 
   const t = translations[lang];
 
@@ -16,6 +29,19 @@ export function SiteProvider({ children }) {
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('dir', t.dir);
   }, [lang, t.dir]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const setTheme = useCallback((next) => {
+    setThemeState(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* ignore */ }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  }, [theme, setTheme]);
 
   const startTour = useCallback(() => {
     setTourStep(0);
@@ -35,6 +61,7 @@ export function SiteProvider({ children }) {
     <SiteContext.Provider value={{
       lang, setLang, t,
       aslEnabled, setAslEnabled,
+      theme, setTheme, toggleTheme,
       tourActive, tourStep, setTourStep, startTour, endTour, hasSeenTour,
     }}>
       {children}

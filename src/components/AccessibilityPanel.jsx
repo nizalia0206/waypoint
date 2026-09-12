@@ -4,7 +4,7 @@ import RecordDemo from './RecordDemo';
 
 export default function AccessibilityPanel() {
   const [open, setOpen] = useState(false);
-  const { lang, setLang, t, aslEnabled, setAslEnabled, startTour, tourActive, tourStep } = useSite();
+  const { lang, setLang, t, aslEnabled, setAslEnabled, startTour, tourActive, tourStep, theme, setTheme } = useSite();
 
   // When the guided tour reaches the accessibility step, open the panel
   // itself so the actual language/ASL/replay/record controls are visible
@@ -38,6 +38,14 @@ export default function AccessibilityPanel() {
 
       {open && (
         <div className="access-panel">
+          <div className="access-row">
+            <span className="access-row-label">{t.access.themeLabel}</span>
+            <div className="access-lang-toggle">
+              <button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}>{t.access.themeLight}</button>
+              <button className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')}>{t.access.themeDark}</button>
+            </div>
+          </div>
+
           <div className="access-row">
             <span className="access-row-label">{t.access.langLabel}</span>
             <div className="access-lang-toggle">
