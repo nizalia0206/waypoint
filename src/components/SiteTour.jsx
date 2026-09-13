@@ -61,7 +61,7 @@ export default function SiteTour() {
   const isLast = tourStep === steps.length - 1;
 
   const handleNext = () => {
-    if (isLast) { endTour(); return; }
+    if (isLast) { endTour(); navigate('/'); return; }
     setTourStep(i => i + 1);
   };
   const handleBack = () => setTourStep(i => Math.max(0, i - 1));

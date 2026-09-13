@@ -3,6 +3,7 @@ import { translations } from '../i18n/translations';
 
 const SiteContext = createContext(null);
 const TOUR_SEEN_KEY = 'waypoint_tour_seen_v1';
+const TOUR_ACTIVE_KEY = 'waypoint_tour_active_v1';
 const THEME_KEY = 'waypoint_theme_v1';
 
 function getInitialTheme() {
@@ -45,15 +46,33 @@ export function SiteProvider({ children }) {
   const startTour = useCallback(() => {
     setTourStep(0);
     setTourActive(true);
+    try { sessionStorage.setItem(TOUR_ACTIVE_KEY, '1'); } catch (e) { /* ignore */ }
   }, []);
 
   const endTour = useCallback(() => {
     setTourActive(false);
-    try { localStorage.setItem(TOUR_SEEN_KEY, '1'); } catch (e) { /* ignore */ }
+    try {
+      localStorage.setItem(TOUR_SEEN_KEY, '1');
+      sessionStorage.removeItem(TOUR_ACTIVE_KEY);
+    } catch (e) { /* ignore */ }
   }, []);
 
   const hasSeenTour = useCallback(() => {
     try { return localStorage.getItem(TOUR_SEEN_KEY) === '1'; } catch (e) { return true; }
+  }, []);
+
+  // True if a previous (pre-reload) session left the tour mid-flight — the
+  // in-memory tourActive state doesn't survive a reload, but the URL the
+  // tour navigated to does, so without this check a reload mid-tour strands
+  // the user on that page with no tour UI. Consumed once on app mount.
+  const wasTourInProgress = useCallback(() => {
+    try {
+      if (sessionStorage.getItem(TOUR_ACTIVE_KEY) === '1') {
+        sessionStorage.removeItem(TOUR_ACTIVE_KEY);
+        return true;
+      }
+    } catch (e) { /* ignore */ }
+    return false;
   }, []);
 
   return (
@@ -61,7 +80,7 @@ export function SiteProvider({ children }) {
       lang, setLang, t,
       aslEnabled, setAslEnabled,
       theme, setTheme, toggleTheme,
-      tourActive, tourStep, setTourStep, startTour, endTour, hasSeenTour,
+      tourActive, tourStep, setTourStep, startTour, endTour, hasSeenTour, wasTourInProgress,
     }}>
       {children}
     </SiteContext.Provider>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import TraceGuide from './components/TraceGuide';
@@ -18,13 +18,24 @@ function AppShell() {
   const { message, show, toast } = useToast();
   const [showLoader, setShowLoader] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
-  const { startTour } = useSite();
+  const { startTour, wasTourInProgress } = useSite();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fadeTimer = setTimeout(() => setFadeOut(true), 2300);
     const removeTimer = setTimeout(() => setShowLoader(false), 2750);
     return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
+  }, []);
+
+  // A reload mid-tour drops the in-memory tour state but leaves the browser
+  // on whatever page the tour had navigated to. Send it home instead of
+  // stranding the user there with no tour UI.
+  useEffect(() => {
+    if (wasTourInProgress() && location.pathname !== '/') {
+      navigate('/', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-launch the tour every time someone lands on the home page (first
