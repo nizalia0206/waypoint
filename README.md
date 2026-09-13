@@ -150,13 +150,12 @@ Rather than guess at a palette, the direction was shaped by [Figma's Color Combi
 | Token | Hex | Role |
 |---|---|---|
 | 🟢 Trail (forest green) | `#174D38` | The single primary brand colour — CTAs, active states, links, headings |
-| 🟤 Way (burgundy) | `#4D1717` | Functional only — decline/sign-out/error states, never decorative |
 | 🟡 Gold | `#B8934A` | The one restrained accent — rewards, points, badges, achievement moments |
 | 🟡 Gold Light | `#F3C86B` | Gold tuned for legibility on dark surfaces (hero, footer) |
 | ⚪ Paper (warm ivory) | `#F5F1E7` | The neutral environment — background |
 | ⚫ Ink (charcoal) | `#1E2420` | Body text |
 
-Early versions used both trail-green *and* burgundy as competing "primary" colours (burgundy powered ~55 UI elements — eyebrow labels, stat numbers, several CTA buttons). It was consolidated down to a single primary, with burgundy demoted to exclusively signal negative/error states — which is what actually satisfies the "2 main colours + 1 accent" principle.
+which is what actually satisfies the "2 main colours + 1 accent" principle.
 
 ### Typography
 
@@ -221,7 +220,7 @@ Fully responsive — the whole matching flow, trail notes grid, and navigation c
 | Routing | `react-router-dom` (`HashRouter`, so it deploys anywhere with zero server config) |
 | Styling | Plain CSS with custom properties (design tokens) — no CSS framework, no Tailwind |
 | State / persistence | React state + Context (`AuthContext`, `SiteContext`) backed by `localStorage` — no backend server |
-| Live AI matching | Anthropic's Claude API (`claude-sonnet-4-6`), called directly from the browser, with a genuine weighted-scoring algorithm as an offline fallback (same major, goal-keyword overlap, shared experience, mentor responsiveness/trust) so the demo works identically whether or not the live API call succeeds |
+| Live AI matching | A genuine weighted-scoring algorithm (same major, goal-keyword overlap, shared experience, mentor responsiveness/trust) so the demo works successfully |
 | Authentication | Local email/password auth, plus real **Google Identity Services** OAuth (see below) |
 | Internationalisation | Custom `i18n` layer — full English + Arabic translations, with RTL layout support |
 | Deployment | Static build (`npm run build`) — deployed on Vercel |
