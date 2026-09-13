@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Mascot from './Mascot';
 import { useSite } from '../context/SiteContext';
 import { useReveal } from '../hooks/useReveal';
@@ -18,6 +18,60 @@ export default function TraceJourney() {
   const [direction, setDirection] = useState(1);
   const [paused, setPaused] = useState(false);
   const [stageRef, hasEntered] = useReveal(0.3);
+  const activeCardRef = useRef(null);
+  const traceWrapRef = useRef(null);
+  // Null until measured, so first paint falls back to the CSS defaults below.
+  const [layout, setLayout] = useState(null);
+
+  // The active card's height is content-driven (each step's text is a
+  // different length), but its vertical position and the trace mascot's
+  // position below it are just fixed CSS offsets. On a narrower card
+  // (mobile, or any viewport near the breakpoint) the same text wraps
+  // onto more lines, so a long step can grow tall enough to run into —
+  // or, since .journey-stage clips overflow for the coverflow fade, get
+  // silently cut off by — the mascot underneath it. Rather than guess
+  // more magic numbers per breakpoint, measure the active card's actual
+  // rendered height and push the mascot (and the stage, if needed) down
+  // just far enough to clear it, for whatever width/text combination is
+  // currently on screen.
+  useLayoutEffect(() => {
+    const cardEl = activeCardRef.current;
+    const stageEl = stageRef.current;
+    if (!cardEl || !stageEl) return undefined;
+
+    const recompute = () => {
+      const isMobile = window.matchMedia('(max-width:760px)').matches;
+      const defaultStageHeight = isMobile ? 420 : 400;
+      const defaultTraceTop = defaultStageHeight * (isMobile ? 0.56 : 0.66);
+      const gap = 14; // breathing room between the card's bottom edge and the mascot
+
+      // offsetTop is the card's pre-transform box position, which is exactly
+      // the anchor point its translate(-50%,-50%) centers on — i.e. its
+      // rendered vertical center — regardless of the % used to place it.
+      const cardCenter = cardEl.offsetTop;
+      const cardBottom = cardCenter + cardEl.offsetHeight / 2;
+      const traceHeight = traceWrapRef.current ? traceWrapRef.current.offsetHeight : (isMobile ? 80 : 110);
+
+      const neededTraceTop = cardBottom + gap + traceHeight / 2;
+      const traceTop = Math.max(defaultTraceTop, neededTraceTop);
+      const stageHeight = Math.max(defaultStageHeight, traceTop + traceHeight / 2 + 20);
+
+      setLayout((prev) => (
+        prev && prev.traceTop === traceTop && prev.stageHeight === stageHeight
+          ? prev
+          : { traceTop, stageHeight }
+      ));
+    };
+
+    recompute();
+    const observer = new ResizeObserver(recompute);
+    observer.observe(cardEl);
+    window.addEventListener('resize', recompute);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', recompute);
+    };
+  }, [current, stageRef]);
 
   // Don't start the journey until the section has actually been scrolled
   // into view — arriving at a stage already mid-motion feels accidental,
@@ -50,6 +104,7 @@ export default function TraceJourney() {
         <div
           className="journey-stage"
           ref={stageRef}
+          style={layout ? { height: `${layout.stageHeight}px` } : undefined}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -69,6 +124,7 @@ export default function TraceJourney() {
               return (
                 <button
                   key={i}
+                  ref={isActive ? activeCardRef : null}
                   className={`journey-card${isActive ? ' active' : ''}`}
                   onClick={() => goTo(i)}
                   aria-label={`${i + 1}: ${s.title}`}
@@ -97,7 +153,12 @@ export default function TraceJourney() {
             })}
           </div>
 
-          <div key={current} className={`journey-trace-wrap dir-${direction}`}>
+          <div
+            key={current}
+            ref={traceWrapRef}
+            className={`journey-trace-wrap dir-${direction}`}
+            style={layout ? { top: `${layout.traceTop}px` } : undefined}
+          >
             <Mascot className="journey-trace-img" />
           </div>
 
