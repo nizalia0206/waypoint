@@ -37,11 +37,17 @@ export default function SiteTour() {
         // z-index (186) is deliberately higher than the nav's (50) so it can
         // pop through the dark tour backdrop, that overlap isn't just
         // hidden — it renders on TOP of the nav, overlapping its text.
-        // Scroll relative to the space actually available below the nav
-        // instead, so a highlighted section can never land under it.
+        // Scroll relative to the space actually available below the nav —
+        // and above the tour card itself, which is fixed to the bottom of
+        // the viewport and can grow tall enough on short screens (laptops,
+        // landscape phones) to overlap the highlighted section's own
+        // heading — instead of the full viewport, so content settles
+        // cleanly between the two rather than behind either.
         const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 92;
+        const cardEl = document.querySelector('.tour-card');
+        const cardH = cardEl ? cardEl.getBoundingClientRect().height + 34 : 0;
         const rect = el.getBoundingClientRect();
-        const availableH = window.innerHeight - navH;
+        const availableH = Math.max(120, window.innerHeight - navH - cardH);
         const desiredTop = rect.height <= availableH
           ? navH + (availableH - rect.height) / 2
           : navH + 16;

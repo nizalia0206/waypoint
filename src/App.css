@@ -57,7 +57,7 @@ html[data-theme="dark"] .hero-scrim{ background:linear-gradient(100deg, rgba(10,
 html[dir="rtl"][data-theme="dark"] .hero-scrim{ background:linear-gradient(260deg, rgba(10,14,11,0.88) 0%, rgba(10,14,11,0.65) 42%, rgba(10,14,11,0.32) 72%, rgba(10,14,11,0.45) 100%); }
 html[data-theme="dark"] .site-footer{ background:#0F1F17; }
 html[data-theme="dark"] ::selection{ background:var(--trail); color:#0F1712; }
-@media (max-width:880px){
+@media (max-width:1024px){
   :root{ --nav-h:80px; }
 }
 html[dir="rtl"]{
@@ -107,7 +107,7 @@ nav.top .wrap{display:flex; align-items:center; justify-content:space-between; h
 .navlinks{display:flex; gap:6px; font-size:17.5px; align-items:center;}
 .nav-actions{display:flex; align-items:center; gap:10px;}
 /* Mobile-only duplicate of Sign In inside the dropdown — hidden by default
-   on desktop, shown again inside the @media(max-width:880px) block below.
+   on desktop, shown again inside the @media(max-width:1024px) block below.
    Must be declared here (before that block) so the mobile override actually
    wins the cascade; a later unconditional rule with equal specificity would
    otherwise clobber it regardless of the media query. */
@@ -158,7 +158,13 @@ html[dir="rtl"] .nav-waypoint-dot{margin-inline-end:0; margin-inline-start:8px;}
 .nav-cta:hover{background:var(--trail-dark); transform:translateY(-2px); box-shadow:0 8px 18px rgba(23,77,56,0.32);}
 .mobile-toggle{display:none; background:none; border:none; color:var(--ink); font-size:24px; cursor:pointer; padding:6px; border-radius:var(--radius-md); transition:background-color .2s var(--ease);}
 .mobile-toggle:hover{background:var(--trail-soft);}
-@media (max-width:880px){
+@media (max-width:1024px){
+  /* Raised from 880px: the full desktop nav (Home, Student View, Mentor
+     View, Problem & Solution, Sign In, Sign Up, Find my trail, Accessibility)
+     doesn't actually fit until ~1016px wide — anything from 881px up to
+     that point fell into neither breakpoint and overflowed horizontally on
+     every page. Moving the switch to hamburger mode up to 1024px (a common
+     tablet-landscape width anyway) closes that gap with margin to spare. */
   nav.top .wrap{height:80px; padding:0 16px;}
   .brand{font-size:22px; gap:7px;}
   .brand svg{width:20px; height:20px;}
@@ -347,6 +353,17 @@ nav.top:has(.tour-highlight){ z-index:187; }
   position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
   width:min(94vw, 560px); background:var(--paper-card); border:1px solid var(--line); border-radius:var(--radius-md);
   padding:26px 28px; box-shadow:var(--shadow-lg); z-index:190;
+  max-height:calc(100vh - 24px); overflow-y:auto;
+}
+@media (max-height:600px){
+  /* On short viewports (laptops with a small browser window, landscape
+     phones) the card's own height eats further into the already-limited
+     space the tour's scroll math reserves for it — trim padding and text
+     size so it takes up less of the screen rather than growing to fill it. */
+  .tour-card{padding:18px 20px;}
+  .tour-card-mascot{width:44px;}
+  .tour-card-title{font-size:19px;}
+  .tour-card-text{font-size:15px; margin-bottom:14px;}
 }
 @media (prefers-reduced-motion: reduce){
   .tour-backdrop{animation:none;}
