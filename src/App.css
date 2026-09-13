@@ -650,23 +650,6 @@ html[dir="rtl"] .journey-nav svg{transform:scaleX(-1);}
   .journey-card.active{width:220px; min-height:130px;}
   .journey-trace-wrap{width:80px; top:64%;}
 }
-@media (max-height:850px){
-  /* On short viewports the tour's own scroll logic can only anchor this
-     section's TOP below the nav — it has no way to know the active card
-     (floating partway down a 400px-tall stage) is the part that actually
-     matters. If the section is too tall to fit above the tour card, that
-     card's lower portion — not just the section's heading — is what ends
-     up hidden behind it. Shrinking the stage and tightening the section's
-     own padding here reduces its total height so the active card has a
-     real chance of clearing the tour card, the same way the width-based
-     breakpoint above already shrinks it for narrow screens. */
-  #journey{padding:48px 0 40px;}
-  .section-head{margin-bottom:20px;}
-  .journey-stage{height:190px;}
-  .journey-card{width:140px; min-height:70px; padding:10px; top:26%;}
-  .journey-card.active{width:200px; min-height:90px;}
-  .journey-trace-wrap{width:50px; top:56%;}
-}
 @media (prefers-reduced-motion: reduce){
   .journey-trace-img{animation:none;}
   .journey-trace-wrap, .journey-trace-wrap.dir-1, .journey-trace-wrap.dir--1{animation:none;}
