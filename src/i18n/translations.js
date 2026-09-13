@@ -437,7 +437,7 @@ export const translations = {
     footer: {
       tagline: 'Find the trail someone already walked.',
       quickLinks: 'Quick Links',
-      line1: 'Waypoint — DesignAthon 2026 prototype',
+      line1: 'Designed for RIT x Twe DesignAthon 2026',
       line2: 'Mentor and journey data shown is illustrative',
     },
     guide: {
@@ -929,7 +929,7 @@ export const translations = {
     footer: {
       tagline: 'اعثر على الطريق الذي سار فيه شخص من قبل.',
       quickLinks: 'روابط سريعة',
-      line1: 'وايبوينت — نموذج أولي لهاكاثون التصميم 2026',
+      line1: 'صُمم من أجل RIT x Twe DesignAthon 2026',
       line2: 'بيانات الموجّهين والمسيرات المعروضة توضيحية',
     },
     guide: {
