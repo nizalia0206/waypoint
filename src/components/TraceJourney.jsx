@@ -24,16 +24,17 @@ export default function TraceJourney() {
   const [layout, setLayout] = useState(null);
 
   // The active card's height is content-driven (each step's text is a
-  // different length), but its vertical position and the trace mascot's
-  // position below it are just fixed CSS offsets. On a narrower card
-  // (mobile, or any viewport near the breakpoint) the same text wraps
-  // onto more lines, so a long step can grow tall enough to run into —
-  // or, since .journey-stage clips overflow for the coverflow fade, get
-  // silently cut off by — the mascot underneath it. Rather than guess
-  // more magic numbers per breakpoint, measure the active card's actual
-  // rendered height and push the mascot (and the stage, if needed) down
-  // just far enough to clear it, for whatever width/text combination is
-  // currently on screen.
+  // different length), but its position, the mascot's position below it,
+  // and the stage height were all just fixed CSS offsets/values. On a
+  // narrower card (mobile, or any viewport near the breakpoint) the same
+  // text wraps onto more lines, so a long step can grow tall enough to
+  // clip against the stage's top edge, or run into (or get clipped by)
+  // the mascot underneath it — since .journey-stage uses overflow:hidden
+  // for the coverflow fade effect. Rather than guess more magic numbers
+  // per breakpoint, measure the active card's actual rendered height and
+  // solve for a card position that (a) keeps its top edge clear of the
+  // stage's top, and (b) leaves the mascot clear of its bottom edge —
+  // growing the stage if needed — for whatever width/text is on screen.
   useLayoutEffect(() => {
     const cardEl = activeCardRef.current;
     const stageEl = stageRef.current;
@@ -42,24 +43,26 @@ export default function TraceJourney() {
     const recompute = () => {
       const isMobile = window.matchMedia('(max-width:760px)').matches;
       const defaultStageHeight = isMobile ? 420 : 400;
+      const defaultCardTop = defaultStageHeight * (isMobile ? 0.24 : 0.36);
       const defaultTraceTop = defaultStageHeight * (isMobile ? 0.56 : 0.66);
+      const topPad = 20; // minimum clearance above the card's top edge
       const gap = 14; // breathing room between the card's bottom edge and the mascot
+      const bottomPad = 20; // minimum clearance below the mascot
 
-      // offsetTop is the card's pre-transform box position, which is exactly
-      // the anchor point its translate(-50%,-50%) centers on — i.e. its
-      // rendered vertical center — regardless of the % used to place it.
-      const cardCenter = cardEl.offsetTop;
-      const cardBottom = cardCenter + cardEl.offsetHeight / 2;
+      const cardHalf = cardEl.offsetHeight / 2;
       const traceHeight = traceWrapRef.current ? traceWrapRef.current.offsetHeight : (isMobile ? 80 : 110);
 
-      const neededTraceTop = cardBottom + gap + traceHeight / 2;
-      const traceTop = Math.max(defaultTraceTop, neededTraceTop);
-      const stageHeight = Math.max(defaultStageHeight, traceTop + traceHeight / 2 + 20);
+      // Only push the card down from its normal resting position if it's
+      // tall enough that its top would otherwise clip.
+      const cardTop = Math.max(defaultCardTop, cardHalf + topPad);
+      const cardBottom = cardTop + cardHalf;
+      const traceTop = Math.max(defaultTraceTop, cardBottom + gap + traceHeight / 2);
+      const stageHeight = Math.max(defaultStageHeight, traceTop + traceHeight / 2 + bottomPad);
 
       setLayout((prev) => (
-        prev && prev.traceTop === traceTop && prev.stageHeight === stageHeight
+        prev && prev.cardTop === cardTop && prev.traceTop === traceTop && prev.stageHeight === stageHeight
           ? prev
-          : { traceTop, stageHeight }
+          : { cardTop, traceTop, stageHeight }
       ));
     };
 
@@ -131,6 +134,7 @@ export default function TraceJourney() {
                   aria-current={isActive}
                   style={{
                     display: show ? 'flex' : 'none',
+                    top: isActive && layout ? `${layout.cardTop}px` : undefined,
                     transform: `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${-angle}deg) scale(${scale})`,
                     opacity,
                     // Only apply the filter when there's actual blur to render.
