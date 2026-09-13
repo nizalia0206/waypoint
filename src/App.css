@@ -181,7 +181,6 @@ html[dir="rtl"] .nav-waypoint-dot{margin-inline-end:0; margin-inline-start:8px;}
   .access-btn-label{display:none;}
   .access-btn{padding:0; width:34px; justify-content:center;}
   .user-menu-name{display:none;}
-  .access-panel{position:fixed; left:12px; right:12px; top:76px; transform:none; width:auto;}
   .mobile-nav-auth{display:flex; flex-direction:column; gap:10px; width:100%; margin-top:10px; padding-top:14px; border-top:1px solid var(--line);}
   .mobile-nav-auth a{width:100%; text-align:center;}
 }
@@ -516,6 +515,17 @@ html[dir="rtl"] .access-switch.on .access-switch-knob{transform:translateX(-16px
 .access-switch-desc{font-size:12px; color:var(--ink-dim); margin:8px 0 0; line-height:1.5;}
 .access-switch-note{font-size:11px; color:var(--ink-dim); margin:8px 0 0; line-height:1.5; opacity:0.8; border-top:1px solid var(--line); padding-top:8px;}
 .access-close{width:100%; margin-top:14px; font-size:12.5px; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--line); background:var(--paper); color:var(--ink-dim); cursor:pointer;}
+@media (max-width:1024px){
+  /* Below the nav breakpoint the access button sits close to a screen
+     edge (and, in RTL, that's the LEFT edge) — centering a fixed
+     280px-wide panel on it (the desktop rule above) pushes most of the
+     panel off-canvas. Anchor it to the viewport edges instead. This has
+     to come after the base .access-panel rule above: an identical
+     override used to live earlier in the stylesheet (in the shared
+     nav/mobile block) and was silently losing the cascade to that later,
+     unconditional rule at every width, including on mobile. */
+  .access-panel{position:fixed; left:12px; right:12px; top:76px; transform:none; width:auto;}
+}
 
 /* ASL badges */
 .hero-asl-badge{
