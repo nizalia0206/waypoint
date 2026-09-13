@@ -34,9 +34,12 @@ export function AuthProvider({ children }) {
     } catch (e) { /* ignore */ }
   }, []);
 
+  // A person can hold one student account AND one mentor account under the
+  // same email (e.g. the same Google account) — so uniqueness is scoped to
+  // email + role, not email alone.
   const signUp = useCallback((payload) => {
     const users = loadUsers();
-    if (users.some((u) => u.email.toLowerCase() === payload.email.toLowerCase())) {
+    if (users.some((u) => u.email.toLowerCase() === payload.email.toLowerCase() && u.role === payload.role)) {
       return { ok: false, error: 'exists' };
     }
     const newUser = { ...payload };
@@ -46,11 +49,16 @@ export function AuthProvider({ children }) {
     return { ok: true, user: newUser };
   }, [persistSession]);
 
-  const signIn = useCallback(({ email, password }) => {
+  // `role` disambiguates when the same email has both a student and a
+  // mentor account (their passwords may even be identical, e.g. two Google
+  // sign-ins under the same address). If role is omitted, falls back to the
+  // first email+password match, same as before.
+  const signIn = useCallback(({ email, password, role }) => {
     const users = loadUsers();
-    const found = users.find(
+    const matches = users.filter(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
+    const found = role ? matches.find((u) => u.role === role) : matches[0];
     if (!found) return { ok: false, error: 'invalid' };
     persistSession(found);
     return { ok: true, user: found };

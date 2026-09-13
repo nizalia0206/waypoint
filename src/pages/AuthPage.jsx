@@ -80,13 +80,16 @@ export default function AuthPage({ toast }) {
       if (!res.ok) throw new Error('userinfo request failed');
       const profile = await res.json();
       const password = passwordForGoogleSub(profile.sub);
+      const currentRole = roleRef.current;
 
-      const signInRes = signIn({ email: profile.email, password });
+      // Look for an existing account matching this email AND this specific
+      // role — so choosing "Mentor" won't sign you into a student account
+      // that happens to share this Google email.
+      const signInRes = signIn({ email: profile.email, password, role: currentRole });
       if (signInRes.ok) {
         completeAuth(signInRes.user);
         return;
       }
-      const currentRole = roleRef.current;
       const payload = {
         name: profile.name || profile.email.split('@')[0],
         email: profile.email,
@@ -159,7 +162,7 @@ export default function AuthPage({ toast }) {
       }
       completeAuth(res.user);
     } else {
-      const res = signIn({ email: form.email.trim(), password: form.password });
+      const res = signIn({ email: form.email.trim(), password: form.password, role });
       if (!res.ok) {
         setError(t.auth.errorInvalid);
         return;
@@ -183,11 +186,14 @@ export default function AuthPage({ toast }) {
           </button>
           <div className="auth-divider"><span>{t.auth.orDivider}</span></div>
 
-          {mode === 'signup' && (
-            <div className="role-row" style={{ marginBottom: 20 }}>
-              <button type="button" className={`role-card${role === 'student' ? ' active' : ''}`} onClick={() => setRole('student')}>{t.auth.imStudent}</button>
-              <button type="button" className={`role-card${role === 'mentor' ? ' active' : ''}`} onClick={() => setRole('mentor')}>{t.auth.imMentor}</button>
-            </div>
+          <div className="role-row" style={{ marginBottom: 20 }}>
+            <button type="button" className={`role-card${role === 'student' ? ' active' : ''}`} onClick={() => setRole('student')}>{t.auth.imStudent}</button>
+            <button type="button" className={`role-card${role === 'mentor' ? ' active' : ''}`} onClick={() => setRole('mentor')}>{t.auth.imMentor}</button>
+          </div>
+          {mode === 'signin' && (
+            <p style={{ fontSize: 13, opacity: 0.65, marginTop: -14, marginBottom: 20 }}>
+              {t.auth.signinRoleHint || 'Pick which account you\u2019re signing into \u2014 you can have a student account and a mentor account under the same email.'}
+            </p>
           )}
 
           {mode === 'signup' && (

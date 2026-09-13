@@ -314,6 +314,13 @@ html[dir="rtl"] .footprint.fp3{right:auto; left:30px;}
   position:relative; z-index:186; border-radius:var(--radius-md);
   animation: tour-pulse 1.7s ease-in-out infinite;
 }
+/* nav.top is position:sticky with its own z-index:50, which creates a
+   stacking context — a highlighted child's z-index:186 only wins *inside*
+   that context, so the nav itself still sits below the tour-backdrop
+   (z-index:185) and looks dimmed even while highlighted (e.g. the
+   Accessibility step). Bump the nav above the backdrop only while one of
+   its descendants is the active highlight. */
+nav.top:has(.tour-highlight){ z-index:187; }
 @keyframes tour-pulse{
   0%,100%{ box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px var(--trail), 0 0 40px rgba(0,0,0,0.35); }
   50%{ box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px var(--trail), 0 0 40px rgba(0,0,0,0.35); }
