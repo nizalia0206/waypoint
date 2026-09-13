@@ -29,7 +29,24 @@ export default function SiteTour() {
     const timer = setTimeout(() => {
       const el = document.getElementById(step.targetId);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Plain scrollIntoView({block:'center'}) centers the element within
+        // the FULL viewport, including the space the sticky nav covers. For
+        // any section taller than (viewport height − nav height) — e.g. the
+        // Rewards section — that pushes the element's top edge up above the
+        // visible area, behind the nav. Since a highlighted element's
+        // z-index (186) is deliberately higher than the nav's (50) so it can
+        // pop through the dark tour backdrop, that overlap isn't just
+        // hidden — it renders on TOP of the nav, overlapping its text.
+        // Scroll relative to the space actually available below the nav
+        // instead, so a highlighted section can never land under it.
+        const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 92;
+        const rect = el.getBoundingClientRect();
+        const availableH = window.innerHeight - navH;
+        const desiredTop = rect.height <= availableH
+          ? navH + (availableH - rect.height) / 2
+          : navH + 16;
+        const targetScrollTop = Math.max(0, window.scrollY + rect.top - desiredTop);
+        window.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
         el.classList.add('tour-highlight');
         highlightRef.current = el;
       }
