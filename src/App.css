@@ -105,6 +105,13 @@ nav.top .wrap{display:flex; align-items:center; justify-content:space-between; h
 .brand svg{width:26px; height:26px; transition:transform .35s var(--ease);}
 .brand:hover svg{transform:rotate(-8deg) scale(1.08);}
 .navlinks{display:flex; gap:6px; font-size:17.5px; align-items:center;}
+.nav-actions{display:flex; align-items:center; gap:10px;}
+/* Mobile-only duplicate of Sign In inside the dropdown — hidden by default
+   on desktop, shown again inside the @media(max-width:880px) block below.
+   Must be declared here (before that block) so the mobile override actually
+   wins the cascade; a later unconditional rule with equal specificity would
+   otherwise clobber it regardless of the media query. */
+.mobile-nav-auth{display:none;}
 .navlinks a{
   position:relative; text-decoration:none; color:var(--ink); font-weight:500;
   padding:9px 16px; border-radius:var(--radius-pill); transition:color .25s var(--ease), background-color .25s var(--ease);
@@ -152,7 +159,9 @@ html[dir="rtl"] .nav-waypoint-dot{margin-inline-end:0; margin-inline-start:8px;}
 .mobile-toggle{display:none; background:none; border:none; color:var(--ink); font-size:24px; cursor:pointer; padding:6px; border-radius:var(--radius-md); transition:background-color .2s var(--ease);}
 .mobile-toggle:hover{background:var(--trail-soft);}
 @media (max-width:880px){
-  nav.top .wrap{height:80px;}
+  nav.top .wrap{height:80px; padding:0 16px;}
+  .brand{font-size:22px; gap:7px;}
+  .brand svg{width:20px; height:20px;}
   .navlinks{position:fixed; top:80px; left:0; right:0; background:var(--paper); flex-direction:column; align-items:flex-start; padding:20px 32px; border-bottom:1px solid var(--line); display:none; gap:8px; max-height:calc(100vh - 80px); overflow-y:auto;}
   .navlinks.open{display:flex;}
   .navlinks a{width:100%; border-radius:var(--radius-md);}
@@ -169,6 +178,15 @@ html[dir="rtl"] .nav-waypoint-dot{margin-inline-end:0; margin-inline-start:8px;}
   .access-panel{position:fixed; left:12px; right:12px; top:76px; transform:none; width:auto;}
   .mobile-nav-auth{display:flex; flex-direction:column; gap:10px; width:100%; margin-top:10px; padding-top:14px; border-top:1px solid var(--line);}
   .mobile-nav-auth a{width:100%; text-align:center;}
+}
+@media (max-width:340px){
+  /* At the very narrowest common phone width (320px), logo + accessibility
+     icon + Sign Up + hamburger don't all fit with the normal gaps — the
+     hamburger ends up squeezed almost flush against the screen edge instead
+     of matching the 16px margin used at every wider size. Tighten just the
+     gaps (not the tap targets themselves) to close that ~14px shortfall. */
+  nav.top .wrap{gap:10px;}
+  .nav-actions{gap:6px;}
 }
 
 /* HERO */
@@ -403,7 +421,7 @@ nav.top:has(.tour-highlight){ z-index:187; }
   min-height:1.05em; width:100%; max-width:1100px; overflow:hidden; padding:0 24px;
 }
 .loading-ticker-word{
-  font-family:var(--serif); font-weight:800; font-size:clamp(40px,9vw,108px); text-transform:uppercase;
+  font-family:var(--serif); font-weight:800; font-size:clamp(22px,8vw,108px); text-transform:uppercase;
   letter-spacing:0.005em; line-height:1; color:var(--ink); white-space:nowrap;
   animation: loading-ticker-flip .5s cubic-bezier(.2,.8,.3,1);
 }
@@ -423,6 +441,11 @@ nav.top:has(.tour-highlight){ z-index:187; }
 .loading-screen-text{font-family:var(--mono); font-size:12px; color:var(--ink-dim); letter-spacing:0.03em; opacity:0; animation: loading-fade-up 0.4s var(--ease) forwards; animation-delay:0.6s;}
 @media (max-width:600px){
   .loading-screen-mascot{width:170px;}
+  /* Safety net: even with the reduced clamp() above, allow the longest
+     ticker word ("FOLLOW YOUR TRAIL") to wrap onto two lines rather than
+     clip on very narrow phones, instead of relying on font-size math alone. */
+  .loading-ticker-wrap{min-height:2.1em;}
+  .loading-ticker-word{white-space:normal; text-align:center;}
 }
 @media (prefers-reduced-motion: reduce){
   .loading-ticker-word{animation:none;}
@@ -920,7 +943,6 @@ html[dir="rtl"] .user-menu-btn{padding:5px 5px 5px 14px;}
   font-family:var(--mono); flex-shrink:0;
 }
 .user-menu-name{font-size:13.5px; font-weight:600; color:var(--ink); white-space:nowrap;}
-.mobile-nav-auth{display:none;}
 .user-menu-panel{
   position:absolute; top:calc(100% + 12px); right:0; background:var(--paper-card);
   border:1px solid var(--line); border-radius:var(--radius-md); padding:10px; min-width:190px;
@@ -1285,7 +1307,7 @@ html[dir="rtl"] .ps-comparison-novelty{border-left:none; border-right:2px solid 
 }
 
 /* ABOUT WAYPOINT (Home page) */
-.about-waypoint{background:var(--paper-card); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+.about-waypoint{background:var(--paper-card); border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow-x:hidden;}
 
 .about-intro{display:flex; align-items:center; gap:44px;}
 .about-manifesto{display:flex; flex-direction:column; margin:14px 0 26px;}

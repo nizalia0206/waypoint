@@ -77,7 +77,13 @@ export default function TraceJourney() {
                     display: show ? 'flex' : 'none',
                     transform: `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${-angle}deg) scale(${scale})`,
                     opacity,
-                    filter: `blur(${blur}px)`,
+                    // Only apply the filter when there's actual blur to render.
+                    // `filter: blur(0px)` is still a non-'none' filter, which
+                    // forces GPU layer promotion/rasterization in Chromium —
+                    // combined with the 3D transform above, that can cause
+                    // small text (the "01" mile number) to render invisible
+                    // for the first frame or two after mount.
+                    filter: blur > 0 ? `blur(${blur}px)` : 'none',
                     zIndex: 100 - abs,
                     pointerEvents: isActive ? 'none' : 'auto',
                   }}

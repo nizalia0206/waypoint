@@ -139,7 +139,7 @@ export default function Nav({ toast }) {
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="nav-actions">
           <AccessibilityPanel />
           {user && (
             <button className="nav-bell" onClick={goToNotifications} aria-label={t.nav.notifications(notifCount)}>
