@@ -645,10 +645,19 @@ html[dir="rtl"] .journey-nav.next{right:auto; left:16px;}
 html[dir="rtl"] .journey-nav svg{transform:scaleX(-1);}
 
 @media (max-width:760px){
-  .journey-stage{height:360px;}
-  .journey-card{width:180px; min-height:100px; padding:16px; top:32%;}
+  /* The active card's height is content-driven (min-height only), and on
+     mobile its narrower width wraps the longer step text — e.g. step 1 —
+     onto enough lines to push the card's bottom edge past the stage's
+     fixed height. Since .journey-stage needs overflow:hidden for the
+     coverflow fade effect, that overflow doesn't scroll or show — it's
+     just silently clipped. Taller stage + a higher card position gives
+     the longest card's text room to wrap without hitting that edge; the
+     trace mascot's top is nudged down by the same proportion so it stays
+     the same visual distance below the card as before. */
+  .journey-stage{height:420px;}
+  .journey-card{width:180px; min-height:100px; padding:16px; top:24%;}
   .journey-card.active{width:220px; min-height:130px;}
-  .journey-trace-wrap{width:80px; top:64%;}
+  .journey-trace-wrap{width:80px; top:56%;}
 }
 @media (prefers-reduced-motion: reduce){
   .journey-trace-img{animation:none;}
