@@ -1,4 +1,5 @@
 # 🧭 Waypoint — Behind the Scenes: How It Was Made
+# RIT Dubai x TWE DesignAthon 2026 - High Scorer 🏅
 
 **Find the trail someone already walked.**
 
